@@ -1,0 +1,1226 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>GemGem · Configure Your Diamond</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,400;0,500;1,300;1,400&family=DM+Sans:wght@300;400;500&display=swap" rel="stylesheet">
+<style>
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+:root {
+  --cream: #F7F4EF;
+  --cream-dark: #EDE9E1;
+  --navy: #1A1F2E;
+  --navy-mid: #2D3348;
+  --gold: #C4963A;
+  --gold-light: #E8C96A;
+  --gold-pale: #F5EDD8;
+  --text: #2A2A2A;
+  --text-mid: #5A5A5A;
+  --text-light: #9A9A9A;
+  --white: #FFFFFF;
+  --border: rgba(42,42,42,0.12);
+  --border-gold: rgba(196,150,58,0.3);
+  --ease: cubic-bezier(0.4, 0, 0.2, 1);
+  --ease-spring: cubic-bezier(0.34, 1.56, 0.64, 1);
+  --scenario-bar-h: 44px;
+  --nav-h: 64px;
+}
+
+html { scroll-behavior: smooth; }
+body {
+  font-family: 'DM Sans', sans-serif;
+  background: var(--cream);
+  color: var(--text);
+  font-size: 15px;
+  line-height: 1.6;
+  overflow-x: hidden;
+}
+
+/* ─────────────────── SCENARIO BAR ─────────────────── */
+.scenario-bar {
+  background: var(--navy);
+  padding: 0 24px;
+  height: var(--scenario-bar-h);
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex-wrap: nowrap;
+  overflow-x: auto;
+  position: fixed; top: 0; left: 0; right: 0; z-index: 200;
+  scrollbar-width: none;
+}
+.scenario-bar::-webkit-scrollbar { display: none; }
+.scenario-label {
+  font-size: 10px; font-weight: 500; letter-spacing: 0.12em;
+  text-transform: uppercase; color: rgba(255,255,255,0.4);
+  white-space: nowrap; margin-right: 4px; flex-shrink: 0;
+}
+.scenario-btn {
+  font-family: 'DM Sans', sans-serif;
+  font-size: 11px; padding: 5px 12px; border-radius: 20px;
+  border: 1px solid rgba(255,255,255,0.15);
+  background: transparent; color: rgba(255,255,255,0.6);
+  cursor: pointer; transition: all 0.2s; white-space: nowrap; flex-shrink: 0;
+}
+.scenario-btn:hover { border-color: rgba(255,255,255,0.35); color: white; }
+.scenario-btn.active { background: var(--gold); border-color: var(--gold); color: var(--navy); font-weight: 500; }
+
+/* ─────────────────── NAV ─────────────────── */
+nav {
+  position: fixed; top: var(--scenario-bar-h); left: 0; right: 0; z-index: 100;
+  display: flex; align-items: center; justify-content: space-between;
+  padding: 0 48px; height: var(--nav-h);
+  background: rgba(247,244,239,0.9);
+  backdrop-filter: blur(16px);
+  border-bottom: 1px solid var(--border);
+}
+.nav-logo {
+  font-family: 'Cormorant Garamond', serif;
+  font-size: 22px; font-weight: 400; letter-spacing: 0.12em;
+  color: var(--navy); text-transform: uppercase;
+}
+.nav-links { display: flex; gap: 32px; list-style: none; }
+.nav-links a { font-size: 13px; color: var(--text-mid); text-decoration: none; transition: color 0.2s; }
+.nav-links a:hover { color: var(--text); }
+.nav-actions { display: flex; align-items: center; gap: 16px; }
+.btn-nav {
+  font-family: 'DM Sans', sans-serif; font-size: 13px; font-weight: 500;
+  padding: 8px 20px; border-radius: 2px; cursor: pointer;
+  border: 1px solid var(--navy); background: var(--navy); color: var(--white);
+  transition: all 0.2s var(--ease);
+}
+.btn-nav.ghost { background: transparent; color: var(--navy); }
+.btn-nav:hover { background: var(--navy-mid); color: white; }
+.nav-hamburger { display: none; background: none; border: none; cursor: pointer; padding: 8px; }
+
+/* ─────────────────── PROGRESS ─────────────────── */
+.progress-bar {
+  position: fixed;
+  top: calc(var(--scenario-bar-h) + var(--nav-h));
+  left: 0; height: 2px;
+  background: var(--gold);
+  transition: width 0.3s var(--ease);
+  z-index: 99;
+}
+
+/* ─────────────────── HERO ─────────────────── */
+.hero {
+  min-height: 100vh;
+  display: grid; grid-template-columns: 1fr 1fr;
+  padding-top: calc(var(--scenario-bar-h) + var(--nav-h));
+}
+.hero-left {
+  display: flex; flex-direction: column; justify-content: center;
+  padding: 80px 64px 80px 80px;
+}
+
+/* Scenario-driven hero content */
+.hero-eyebrow {
+  font-size: 11px; font-weight: 500; letter-spacing: 0.2em;
+  text-transform: uppercase; color: var(--gold);
+  margin-bottom: 24px; display: flex; align-items: center; gap: 12px;
+  opacity: 0; transform: translateY(16px);
+  animation: fadeUp 0.7s var(--ease) 0.2s forwards;
+}
+.hero-eyebrow::before { content: ''; display: block; width: 32px; height: 1px; background: var(--gold); }
+.hero-title {
+  font-family: 'Cormorant Garamond', serif;
+  font-size: clamp(42px, 4.5vw, 68px); font-weight: 300; line-height: 1.08;
+  color: var(--navy); margin-bottom: 24px;
+  opacity: 0; transform: translateY(20px);
+  animation: fadeUp 0.8s var(--ease) 0.35s forwards;
+}
+.hero-title em { font-style: italic; color: var(--gold); }
+.hero-desc {
+  font-size: 16px; font-weight: 300; line-height: 1.7;
+  color: var(--text-mid); max-width: 380px; margin-bottom: 48px;
+  opacity: 0; transform: translateY(16px);
+  animation: fadeUp 0.7s var(--ease) 0.5s forwards;
+}
+.hero-cta {
+  display: flex; align-items: center; gap: 20px;
+  opacity: 0; animation: fadeUp 0.7s var(--ease) 0.65s forwards;
+}
+.btn-primary {
+  font-family: 'DM Sans', sans-serif; font-size: 13px; font-weight: 500;
+  letter-spacing: 0.08em; padding: 16px 40px;
+  background: var(--navy); color: var(--white);
+  border: none; border-radius: 2px; cursor: pointer;
+  transition: all 0.25s var(--ease); text-transform: uppercase;
+}
+.btn-primary:hover { transform: translateY(-2px); box-shadow: 0 8px 24px rgba(26,31,46,0.25); }
+.btn-primary:active { transform: translateY(0); }
+.btn-ghost {
+  font-family: 'DM Sans', sans-serif; font-size: 13px;
+  color: var(--text-mid); background: none; border: none; cursor: pointer;
+  display: flex; align-items: center; gap: 8px; padding: 0;
+  transition: color 0.2s;
+}
+.btn-ghost:hover { color: var(--text); }
+.btn-ghost .arrow { transition: transform 0.2s var(--ease); }
+.btn-ghost:hover .arrow { transform: translateX(4px); }
+
+.hero-trust {
+  margin-top: 64px; display: flex; gap: 32px;
+  opacity: 0; animation: fadeUp 0.7s var(--ease) 0.8s forwards;
+}
+.trust-item { display: flex; flex-direction: column; gap: 4px; }
+.trust-num { font-family: 'Cormorant Garamond', serif; font-size: 28px; font-weight: 300; color: var(--navy); }
+.trust-label { font-size: 11px; letter-spacing: 0.06em; color: var(--text-light); text-transform: uppercase; }
+.trust-divider { width: 1px; background: var(--border); align-self: stretch; margin: 4px 0; }
+
+/* Scenario badge in hero */
+.scenario-badge {
+  display: inline-flex; align-items: center; gap: 8px;
+  background: var(--gold-pale); border: 1px solid var(--border-gold);
+  border-radius: 20px; padding: 6px 14px;
+  font-size: 12px; font-weight: 500; color: var(--gold);
+  margin-bottom: 20px;
+  opacity: 0; transform: translateY(8px);
+  transition: all 0.4s var(--ease);
+}
+.scenario-badge.show { opacity: 1; transform: translateY(0); }
+.scenario-badge-dot { width: 6px; height: 6px; border-radius: 50%; background: var(--gold); }
+
+/* ─────────────────── CAROUSEL ─────────────────── */
+.hero-right { position: relative; overflow: hidden; background: var(--cream-dark); }
+.carousel { position: relative; width: 100%; height: 100%; min-height: 500px; }
+.carousel-slide {
+  position: absolute; inset: 0;
+  display: flex; align-items: center; justify-content: center;
+  transition: opacity 0.8s var(--ease), transform 0.8s var(--ease);
+  opacity: 0; transform: scale(1.04);
+}
+.carousel-slide.active { opacity: 1; transform: scale(1); }
+.slide-bg-1 { background: linear-gradient(145deg,#D4C5B0,#B8A896 40%,#8C7B6A); }
+.slide-bg-2 { background: linear-gradient(145deg,#C8D4D8,#A0B4BC 40%,#6A8890); }
+.slide-bg-3 { background: linear-gradient(145deg,#D8C8B8,#C0A888 40%,#8A7060); }
+.slide-bg-4 { background: linear-gradient(145deg,#C4CCD4,#9AAAB8 40%,#68808C); }
+.slide-bg-5 { background: linear-gradient(145deg,#D4C8D0,#B8A0B4 40%,#8A6A88); }
+.slide-bg-6 { background: linear-gradient(145deg,#C8D0C4,#A8B8A0 40%,#6A8868); }
+.gem-icon { width: 160px; height: 160px; opacity: 0.22; }
+.carousel-caption {
+  position: absolute; bottom: 40px; left: 40px; right: 40px;
+  opacity: 0; transform: translateY(8px);
+  transition: all 0.5s var(--ease) 0.3s;
+}
+.carousel-slide.active .carousel-caption { opacity: 1; transform: translateY(0); }
+.caption-tag {
+  display: inline-block; font-size: 11px; font-weight: 500; letter-spacing: 0.12em;
+  text-transform: uppercase; color: white;
+  background: rgba(26,31,46,0.55); backdrop-filter: blur(8px);
+  padding: 6px 14px; border-radius: 2px; margin-bottom: 8px;
+}
+.caption-text {
+  font-family: 'Cormorant Garamond', serif; font-size: 22px; font-weight: 300;
+  color: white; line-height: 1.3; text-shadow: 0 2px 8px rgba(0,0,0,0.3);
+}
+.carousel-dots {
+  position: absolute; top: 40px; right: 40px;
+  display: flex; flex-direction: column; gap: 8px;
+}
+.dot {
+  width: 4px; height: 24px; border-radius: 2px;
+  background: rgba(255,255,255,0.3); cursor: pointer;
+  transition: all 0.35s var(--ease);
+}
+.dot.active { height: 40px; background: var(--gold-light); }
+.carousel-controls {
+  position: absolute; bottom: 40px; right: 40px;
+  display: flex; gap: 8px;
+}
+.carousel-btn {
+  width: 40px; height: 40px; border-radius: 50%;
+  background: rgba(255,255,255,0.15); backdrop-filter: blur(8px);
+  border: 1px solid rgba(255,255,255,0.25); color: white;
+  font-size: 16px; cursor: pointer; transition: all 0.2s var(--ease);
+  display: flex; align-items: center; justify-content: center;
+}
+.carousel-btn:hover { background: rgba(255,255,255,0.3); transform: scale(1.05); }
+
+/* ─────────────────── CONFIGURATOR ─────────────────── */
+.configurator { max-width: 960px; margin: 0 auto; padding: 80px 40px 120px; }
+
+.config-header { text-align: center; margin-bottom: 72px; opacity: 0; transform: translateY(24px); transition: all 0.7s var(--ease); }
+.config-header.visible { opacity: 1; transform: translateY(0); }
+.config-icon {
+  width: 48px; height: 48px; margin: 0 auto 20px;
+  background: var(--navy); border-radius: 50%;
+  display: flex; align-items: center; justify-content: center;
+}
+.config-title { font-family: 'Cormorant Garamond', serif; font-size: 40px; font-weight: 300; font-style: italic; color: var(--navy); margin-bottom: 12px; line-height: 1.2; }
+.config-sub { font-size: 15px; font-weight: 300; color: var(--text-mid); max-width: 480px; margin: 0 auto; }
+
+/* Scenario context banner */
+.scenario-context {
+  border-radius: 4px; padding: 16px 20px; margin-bottom: 48px;
+  font-size: 14px; line-height: 1.6; display: none;
+  border-left: 3px solid var(--gold);
+}
+.scenario-context.show { display: flex; align-items: flex-start; gap: 12px; }
+.scenario-context-icon { font-size: 18px; flex-shrink: 0; margin-top: 2px; }
+
+.step { margin-bottom: 72px; opacity: 0; transform: translateY(24px); transition: all 0.65s var(--ease); }
+.step.visible { opacity: 1; transform: translateY(0); }
+.step-label { font-size: 11px; font-weight: 500; letter-spacing: 0.18em; text-transform: uppercase; color: var(--gold); margin-bottom: 8px; }
+.step-title { font-family: 'Cormorant Garamond', serif; font-size: 32px; font-weight: 300; color: var(--navy); margin-bottom: 32px; line-height: 1.2; }
+.step-subtitle { font-family: 'DM Sans'; font-size: 15px; font-weight: 300; color: var(--text-light); }
+
+/* ─────────────────── SHAPES ─────────────────── */
+.shapes-grid { display: grid; grid-template-columns: repeat(5,1fr); gap: 12px; }
+.shape-card {
+  display: flex; flex-direction: column; align-items: center; gap: 10px;
+  padding: 20px 12px; border: 1px solid var(--border); border-radius: 4px;
+  cursor: pointer; transition: all 0.25s var(--ease);
+  background: var(--white); position: relative;
+}
+.shape-card:hover { border-color: var(--border-gold); transform: translateY(-2px); }
+.shape-card.selected {
+  border-color: var(--gold); background: var(--gold-pale);
+  transform: translateY(-2px); box-shadow: 0 4px 16px rgba(196,150,58,0.15);
+}
+.shape-svg { width: 44px; height: 44px; }
+.shape-name { font-size: 11px; color: var(--text-mid); text-align: center; transition: color 0.2s; }
+.shape-card.selected .shape-name { color: var(--gold); font-weight: 500; }
+.shape-check {
+  position: absolute; top: 8px; right: 8px;
+  width: 16px; height: 16px; border-radius: 50%; background: var(--gold);
+  display: flex; align-items: center; justify-content: center;
+  opacity: 0; transform: scale(0);
+  transition: all 0.25s var(--ease-spring);
+}
+.shape-card.selected .shape-check { opacity: 1; transform: scale(1); }
+
+/* ─────────────────── PREFS ─────────────────── */
+.pref-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
+.pref-card {
+  padding: 24px; border: 1px solid var(--border); border-radius: 4px;
+  cursor: pointer; background: var(--white); transition: all 0.25s var(--ease); position: relative;
+}
+.pref-card:hover { border-color: var(--border-gold); transform: translateY(-2px); }
+.pref-card.selected { border-color: var(--gold); background: var(--gold-pale); box-shadow: 0 4px 16px rgba(196,150,58,0.12); }
+.pref-title { font-weight: 500; font-size: 15px; color: var(--navy); margin-bottom: 4px; transition: color 0.2s; }
+.pref-card.selected .pref-title { color: var(--gold); }
+.pref-desc { font-size: 13px; color: var(--text-light); font-weight: 300; line-height: 1.5; }
+.pref-indicator {
+  position: absolute; top: 16px; right: 16px;
+  width: 20px; height: 20px; border-radius: 50%;
+  border: 1.5px solid var(--border);
+  display: flex; align-items: center; justify-content: center;
+  transition: all 0.25s var(--ease-spring);
+}
+.pref-card.selected .pref-indicator { background: var(--gold); border-color: var(--gold); }
+.pref-card.selected .pref-indicator::after { content: ''; width: 6px; height: 6px; border-radius: 50%; background: white; }
+
+/* ─────────────────── PARAMS ─────────────────── */
+.params-card { background: var(--white); border: 1px solid var(--border); border-radius: 4px; padding: 40px; }
+.param-group { margin-bottom: 36px; padding-bottom: 36px; border-bottom: 1px solid var(--border); }
+.param-group:last-child { margin-bottom: 0; padding-bottom: 0; border-bottom: none; }
+.param-label { font-size: 13px; font-weight: 500; letter-spacing: 0.06em; text-transform: uppercase; color: var(--navy); margin-bottom: 20px; }
+.param-options { display: grid; grid-template-columns: repeat(auto-fit,minmax(120px,1fr)); gap: 8px; }
+.param-btn {
+  padding: 14px 16px; border: 1px solid var(--border); border-radius: 3px;
+  cursor: pointer; background: transparent; transition: all 0.2s var(--ease);
+  text-align: left; font-family: 'DM Sans', sans-serif;
+}
+.param-btn:hover { border-color: var(--border-gold); background: var(--gold-pale); }
+.param-btn.selected { border-color: var(--gold); background: var(--gold-pale); }
+.param-btn-top { font-size: 13px; font-weight: 500; color: var(--navy); margin-bottom: 2px; display: block; }
+.param-btn.selected .param-btn-top { color: var(--gold); }
+.param-btn-sub { font-size: 11px; color: var(--text-light); font-weight: 300; display: block; }
+
+.range-wrap { margin-top: 8px; }
+.range-labels { display: flex; justify-content: space-between; margin-bottom: 12px; font-size: 12px; color: var(--text-light); }
+.range-value { font-family: 'Cormorant Garamond', serif; font-size: 24px; font-weight: 300; color: var(--navy); text-align: center; margin-bottom: 16px; }
+input[type="range"] {
+  -webkit-appearance: none; width: 100%; height: 2px;
+  background: var(--border); border-radius: 1px; outline: none; cursor: pointer;
+}
+input[type="range"]::-webkit-slider-thumb {
+  -webkit-appearance: none; width: 20px; height: 20px; border-radius: 50%;
+  background: var(--navy); border: 3px solid var(--cream);
+  box-shadow: 0 0 0 1px var(--navy);
+  transition: transform 0.15s var(--ease-spring); cursor: grab;
+}
+input[type="range"]::-webkit-slider-thumb:active { transform: scale(1.2); cursor: grabbing; }
+
+.expert-tip {
+  margin-top: 20px; padding: 16px 20px;
+  background: var(--gold-pale); border-left: 3px solid var(--gold); border-radius: 0 3px 3px 0;
+  font-size: 13px; color: var(--text-mid); line-height: 1.6; font-weight: 300;
+  opacity: 0; transform: translateY(8px); transition: all 0.4s var(--ease) 0.1s;
+}
+.expert-tip.visible { opacity: 1; transform: translateY(0); }
+.expert-tip strong { font-weight: 500; color: var(--navy); }
+
+/* ─────────────────── CONTEXT ─────────────────── */
+.budget-row { display: grid; grid-template-columns: 1fr 1fr; gap: 20px; margin-bottom: 28px; }
+.field-group { display: flex; flex-direction: column; gap: 6px; }
+.field-label { font-size: 12px; font-weight: 500; letter-spacing: 0.06em; text-transform: uppercase; color: var(--text-mid); }
+.field-input {
+  padding: 12px 16px; border: 1px solid var(--border); border-radius: 3px;
+  background: var(--white); font-family: 'DM Sans', sans-serif;
+  font-size: 15px; color: var(--text); outline: none;
+  transition: all 0.2s var(--ease); width: 100%;
+}
+.field-input::placeholder { color: var(--text-light); font-weight: 300; }
+.field-input:hover { border-color: rgba(42,42,42,0.25); }
+.field-input:focus { border-color: var(--gold); box-shadow: 0 0 0 3px rgba(196,150,58,0.12); }
+textarea.field-input { resize: vertical; min-height: 96px; font-family: 'DM Sans', sans-serif; line-height: 1.6; }
+
+.occasion-grid { display: grid; grid-template-columns: repeat(4,1fr); gap: 8px; margin-bottom: 28px; }
+.timeline-grid { display: grid; grid-template-columns: repeat(4,1fr); gap: 8px; margin-bottom: 28px; }
+.occasion-btn {
+  padding: 12px 8px; border: 1px solid var(--border); border-radius: 3px;
+  cursor: pointer; background: var(--white);
+  font-family: 'DM Sans', sans-serif; font-size: 13px; font-weight: 400;
+  color: var(--text-mid); text-align: center; transition: all 0.2s var(--ease);
+}
+.occasion-btn:hover { border-color: var(--border-gold); color: var(--text); }
+.occasion-btn.selected { border-color: var(--gold); background: var(--gold-pale); color: var(--gold); font-weight: 500; }
+
+.upload-zone {
+  border: 1.5px dashed var(--border); border-radius: 4px;
+  padding: 48px; text-align: center; cursor: pointer;
+  transition: all 0.25s var(--ease); background: var(--white);
+}
+.upload-zone:hover { border-color: var(--gold); background: var(--gold-pale); }
+.upload-zone:hover .upload-icon { transform: translateY(-4px); }
+.upload-icon { font-size: 28px; margin-bottom: 12px; display: block; opacity: 0.5; transition: transform 0.3s var(--ease-spring); }
+.upload-text { font-size: 14px; color: var(--text-mid); margin-bottom: 4px; }
+.upload-hint { font-size: 12px; color: var(--text-light); }
+
+.contact-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 20px; margin-bottom: 20px; }
+
+/* ─────────────────── SUBMIT ─────────────────── */
+.submit-section { margin-top: 48px; text-align: center; }
+.btn-submit {
+  font-family: 'DM Sans', sans-serif; font-size: 14px; font-weight: 500;
+  letter-spacing: 0.1em; text-transform: uppercase;
+  padding: 20px 64px; background: var(--navy); color: var(--white);
+  border: none; border-radius: 2px; cursor: pointer;
+  transition: all 0.3s var(--ease);
+}
+.btn-submit:hover { transform: translateY(-3px); box-shadow: 0 12px 32px rgba(26,31,46,0.3); }
+.btn-submit:active { transform: translateY(0); }
+.submit-note { margin-top: 16px; font-size: 12px; color: var(--text-light); }
+
+/* ─────────────────── FLOATING PILL ─────────────────── */
+.summary-pill {
+  position: fixed; bottom: 32px; right: 32px;
+  background: var(--navy); color: white;
+  padding: 12px 20px; border-radius: 32px;
+  font-size: 13px; display: flex; align-items: center; gap: 12px;
+  box-shadow: 0 8px 32px rgba(26,31,46,0.25);
+  transform: translateY(80px); transition: transform 0.4s var(--ease-spring);
+  z-index: 50; cursor: pointer;
+}
+.summary-pill.visible { transform: translateY(0); }
+.summary-dot { width: 8px; height: 8px; border-radius: 50%; background: var(--gold-light); flex-shrink: 0; }
+
+/* ─────────────────── TOOLTIP ─────────────────── */
+.tooltip-wrap { position: relative; display: inline-block; }
+.tooltip-trigger {
+  width: 16px; height: 16px; border-radius: 50%;
+  border: 1px solid var(--border); background: transparent;
+  color: var(--text-light); font-size: 10px; cursor: pointer;
+  display: inline-flex; align-items: center; justify-content: center;
+  margin-left: 8px; vertical-align: middle;
+}
+.tooltip-box {
+  position: absolute; bottom: calc(100% + 8px); left: 50%;
+  transform: translateX(-50%) translateY(4px);
+  background: var(--navy); color: white; font-size: 12px; font-weight: 300;
+  padding: 10px 14px; border-radius: 4px; width: 200px;
+  pointer-events: none; opacity: 0; transition: all 0.2s var(--ease); z-index: 20;
+}
+.tooltip-wrap:hover .tooltip-box { opacity: 1; transform: translateX(-50%) translateY(0); }
+
+/* ─────────────────── ANIMATIONS ─────────────────── */
+@keyframes fadeUp { to { opacity: 1; transform: translateY(0); } }
+
+/* ─────────────────── MINIMAL SCENARIO ─────────────────── */
+body.scenario-minimal .step:not(#step1):not(#step4-budget):not(#step5) { display: none; }
+.step-minimal-only { display: none; }
+body.scenario-minimal .step-minimal-only { display: block; }
+
+/* ─────────────────── MOBILE NAV DRAWER ─────────────────── */
+.mobile-menu {
+  position: fixed; top: calc(var(--scenario-bar-h) + var(--nav-h)); left: 0; right: 0;
+  background: var(--cream); border-bottom: 1px solid var(--border);
+  padding: 24px; z-index: 90;
+  transform: translateY(-100%); opacity: 0; pointer-events: none;
+  transition: all 0.3s var(--ease);
+}
+.mobile-menu.open { transform: translateY(0); opacity: 1; pointer-events: all; }
+.mobile-menu ul { list-style: none; display: flex; flex-direction: column; gap: 4px; margin-bottom: 20px; }
+.mobile-menu a { display: block; padding: 12px 0; font-size: 16px; color: var(--text); text-decoration: none; border-bottom: 1px solid var(--border); }
+.mobile-menu .mobile-actions { display: flex; gap: 12px; }
+.mobile-menu .mobile-actions .btn-nav { flex: 1; text-align: center; }
+
+/* ─────────────────── RESPONSIVE ─────────────────── */
+@media (max-width: 1024px) {
+  nav { padding: 0 24px; }
+  .nav-links { display: none; }
+  .nav-actions { display: none; }
+  .nav-hamburger { display: flex; flex-direction: column; gap: 5px; }
+  .nav-hamburger span { display: block; width: 24px; height: 1.5px; background: var(--navy); transition: all 0.2s; }
+  .hero-left { padding: 60px 40px 60px 40px; }
+}
+
+@media (max-width: 768px) {
+  :root { --scenario-bar-h: 40px; --nav-h: 56px; }
+
+  /* Stack hero vertically on mobile */
+  .hero {
+    grid-template-columns: 1fr;
+    min-height: auto;
+  }
+  .hero-left {
+    padding: 48px 24px 40px;
+    order: 2;
+  }
+  .hero-right {
+    order: 1;
+    min-height: 300px;
+  }
+  .carousel { min-height: 300px; }
+  .carousel-dots { top: 16px; right: 16px; }
+  .carousel-controls { bottom: 16px; right: 16px; }
+  .carousel-caption { bottom: 16px; left: 16px; right: 16px; }
+  .caption-text { font-size: 17px; }
+
+  .hero-title { font-size: 38px; margin-bottom: 16px; }
+  .hero-desc { font-size: 15px; margin-bottom: 32px; }
+  .hero-cta { flex-direction: column; align-items: flex-start; gap: 16px; }
+  .btn-primary { width: 100%; text-align: center; }
+  .hero-trust { margin-top: 40px; gap: 20px; }
+  .trust-num { font-size: 22px; }
+
+  /* Configurator */
+  .configurator { padding: 48px 20px 80px; }
+  .config-title { font-size: 30px; }
+  .step-title { font-size: 26px; margin-bottom: 24px; }
+
+  /* Shapes – 3 col on mobile */
+  .shapes-grid { grid-template-columns: repeat(3,1fr); gap: 8px; }
+  .shape-card { padding: 16px 8px; gap: 8px; }
+  .shape-svg { width: 36px; height: 36px; }
+
+  /* Prefs – stack */
+  .pref-grid { grid-template-columns: 1fr; }
+
+  /* Params */
+  .params-card { padding: 24px 20px; }
+  .param-options { grid-template-columns: 1fr 1fr; }
+
+  /* Context */
+  .budget-row { grid-template-columns: 1fr; gap: 16px; }
+  .occasion-grid { grid-template-columns: repeat(2,1fr); }
+  .timeline-grid { grid-template-columns: repeat(2,1fr); }
+  .upload-zone { padding: 32px 20px; }
+  .contact-grid { grid-template-columns: 1fr; }
+
+  .btn-submit { width: 100%; padding: 18px 24px; }
+  .summary-pill { bottom: 20px; right: 16px; left: 16px; border-radius: 12px; justify-content: center; }
+
+  .scenario-bar { padding: 0 16px; gap: 6px; }
+  .scenario-label { display: none; }
+  nav { padding: 0 16px; }
+  .progress-bar { top: calc(var(--scenario-bar-h) + var(--nav-h)); }
+}
+
+@media (max-width: 480px) {
+  .shapes-grid { grid-template-columns: repeat(2,1fr); }
+  .param-options { grid-template-columns: 1fr; }
+  .hero-title { font-size: 32px; }
+  .config-title { font-size: 26px; }
+}
+</style>
+</head>
+<body>
+
+<!-- SCENARIO BAR -->
+<div class="scenario-bar">
+  <span class="scenario-label">Scenario:</span>
+  <button class="scenario-btn active" onclick="setScenario(this,'default')">Default · Full form</button>
+  <button class="scenario-btn" onclick="setScenario(this,'returning')">Returning user · Pre-filled</button>
+  <button class="scenario-btn" onclick="setScenario(this,'minimal')">Minimal · Quick path</button>
+  <button class="scenario-btn" onclick="setScenario(this,'gift')">Gift buyer · Occasion-first</button>
+</div>
+
+<!-- PROGRESS BAR -->
+<div class="progress-bar" id="progressBar" style="width:0%"></div>
+
+<!-- NAV -->
+<nav>
+  <span class="nav-logo">GemGem</span>
+  <ul class="nav-links">
+    <li><a href="#">Jewelry</a></li>
+    <li><a href="#">Diamonds</a></li>
+    <li><a href="#">Gemstones</a></li>
+    <li><a href="#">Sell</a></li>
+    <li><a href="#">How it works</a></li>
+  </ul>
+  <div class="nav-actions">
+    <button class="btn-nav ghost">Log in</button>
+    <button class="btn-nav">Sign up</button>
+  </div>
+  <button class="nav-hamburger" id="hamburger" onclick="toggleMenu()" aria-label="Menu">
+    <span></span><span></span><span></span>
+  </button>
+</nav>
+
+<!-- MOBILE MENU -->
+<div class="mobile-menu" id="mobileMenu">
+  <ul>
+    <li><a href="#" onclick="toggleMenu()">Jewelry</a></li>
+    <li><a href="#" onclick="toggleMenu()">Diamonds</a></li>
+    <li><a href="#" onclick="toggleMenu()">Gemstones</a></li>
+    <li><a href="#" onclick="toggleMenu()">Sell</a></li>
+    <li><a href="#" onclick="toggleMenu()">How it works</a></li>
+  </ul>
+  <div class="mobile-actions">
+    <button class="btn-nav ghost" style="flex:1">Log in</button>
+    <button class="btn-nav" style="flex:1">Sign up</button>
+  </div>
+</div>
+
+<!-- HERO -->
+<section class="hero">
+  <div class="hero-left">
+    <div class="scenario-badge" id="heroBadge" style="display:none">
+      <span class="scenario-badge-dot"></span>
+      <span id="heroBadgeText"></span>
+    </div>
+    <div class="hero-eyebrow" id="heroEyebrow">Expert Curation Service</div>
+    <h1 class="hero-title" id="heroTitle">Find your <em>perfect</em><br>diamond.</h1>
+    <p class="hero-desc" id="heroDesc">Skip the overwhelming catalog. Tell us your vision and our gemologists will hand-pick 3–5 stunning options tailored for you.</p>
+    <div class="hero-cta">
+      <button class="btn-primary" onclick="scrollToConfig()" id="heroCtaBtn">Start Configuring</button>
+      <button class="btn-ghost">See how it works <span class="arrow">→</span></button>
+    </div>
+    <div class="hero-trust" id="heroTrust">
+      <div class="trust-item">
+        <span class="trust-num">12k+</span>
+        <span class="trust-label">Diamonds curated</span>
+      </div>
+      <div class="trust-divider"></div>
+      <div class="trust-item">
+        <span class="trust-num">98%</span>
+        <span class="trust-label">Satisfaction rate</span>
+      </div>
+      <div class="trust-divider"></div>
+      <div class="trust-item">
+        <span class="trust-num">48h</span>
+        <span class="trust-label">Turnaround</span>
+      </div>
+    </div>
+  </div>
+
+  <div class="hero-right">
+    <div class="carousel" id="carousel">
+      <!-- Slides injected by JS -->
+    </div>
+    <div class="carousel-dots" id="carouselDots"></div>
+    <div class="carousel-controls">
+      <button class="carousel-btn" onclick="prevSlide()">←</button>
+      <button class="carousel-btn" onclick="nextSlide()">→</button>
+    </div>
+  </div>
+</section>
+
+<!-- CONFIGURATOR -->
+<div class="configurator" id="configurator">
+
+  <div class="config-header" id="configHeader">
+    <div class="config-icon">
+      <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="1.5">
+        <polygon points="12,2 15.09,8.26 22,9.27 17,14.14 18.18,21.02 12,17.77 5.82,21.02 7,14.14 2,9.27 8.91,8.26"/>
+      </svg>
+    </div>
+    <h2 class="config-title" id="configTitle">Configure your perfect diamond.</h2>
+    <p class="config-sub" id="configSub">Tell us your vision and our experts will hand-pick 3–5 stunning options tailored for you.</p>
+  </div>
+
+  <!-- Scenario context banner -->
+  <div class="scenario-context" id="scenarioContext" style="background:var(--gold-pale);">
+    <span class="scenario-context-icon" id="contextIcon"></span>
+    <div>
+      <strong id="contextTitle" style="font-weight:500;color:var(--navy);display:block;margin-bottom:4px;"></strong>
+      <span id="contextBody" style="font-size:13px;color:var(--text-mid);font-weight:300;"></span>
+    </div>
+  </div>
+
+  <!-- STEP 1: SHAPE -->
+  <div class="step" id="step1">
+    <div class="step-label">01 / Silhouette</div>
+    <h3 class="step-title">Select your shape</h3>
+    <div class="shapes-grid" id="shapesGrid">
+      <!-- injected by JS -->
+    </div>
+  </div>
+
+  <!-- STEP 2: PREFERENCE -->
+  <div class="step" id="step2">
+    <div class="step-label">02 / Preferences</div>
+    <h3 class="step-title">If you had to choose one thing, what matters most?</h3>
+    <div class="pref-grid" id="prefGrid">
+      <!-- injected by JS -->
+    </div>
+  </div>
+
+  <!-- STEP 3: PARAMETERS -->
+  <div class="step" id="step3">
+    <div class="step-label">03 / Details</div>
+    <h3 class="step-title">The Parameters <span class="step-subtitle">(helps us match the right style)</span></h3>
+    <div class="params-card">
+      <div class="param-group">
+        <div class="param-label">Cut
+          <span class="tooltip-wrap">
+            <button class="tooltip-trigger">?</button>
+            <span class="tooltip-box">Cut grade affects how light reflects. Ideal = top 3%; Good is budget-friendly with barely noticeable difference.</span>
+          </span>
+        </div>
+        <div class="param-options" id="cutOptions">
+          <button class="param-btn selected" onclick="selectParam(this)"><span class="param-btn-top">Ideal</span><span class="param-btn-sub">Top 3% of all diamonds</span></button>
+          <button class="param-btn" onclick="selectParam(this)"><span class="param-btn-top">Very</span><span class="param-btn-sub">Indistinguishable to naked eye</span></button>
+          <button class="param-btn" onclick="selectParam(this)"><span class="param-btn-top">Good</span><span class="param-btn-sub">Best when size or budget takes priority</span></button>
+        </div>
+      </div>
+      <div class="param-group">
+        <div class="param-label">Color</div>
+        <div class="param-options" style="grid-template-columns:repeat(5,1fr)" id="colorOptions">
+          <button class="param-btn selected" onclick="selectParam(this)"><span class="param-btn-top">D–F</span><span class="param-btn-sub">Colorless</span></button>
+          <button class="param-btn" onclick="selectParam(this)"><span class="param-btn-top">G–H</span><span class="param-btn-sub">Near Colorless</span></button>
+          <button class="param-btn" onclick="selectParam(this)"><span class="param-btn-top">I–J</span><span class="param-btn-sub">Faint Warmth</span></button>
+          <button class="param-btn" onclick="selectParam(this)"><span class="param-btn-top">K–L</span><span class="param-btn-sub">Very Light</span></button>
+          <button class="param-btn" onclick="selectParam(this)"><span class="param-btn-top">M+</span><span class="param-btn-sub">Light Color</span></button>
+        </div>
+      </div>
+      <div class="param-group">
+        <div class="param-label">Clarity</div>
+        <div class="param-options" style="grid-template-columns:repeat(3,1fr)" id="clarityOptions">
+          <button class="param-btn" onclick="selectParam(this)"><span class="param-btn-top">FL/IF</span><span class="param-btn-sub">Flawless</span></button>
+          <button class="param-btn selected" onclick="selectParam(this)"><span class="param-btn-top">VS1–VS2</span><span class="param-btn-sub">Very Slightly Included</span></button>
+          <button class="param-btn" onclick="selectParam(this)"><span class="param-btn-top">SI1–SI2</span><span class="param-btn-sub">Eye clean value</span></button>
+        </div>
+      </div>
+      <div class="param-group">
+        <div class="param-label">Carat Weight</div>
+        <div class="range-wrap">
+          <div class="range-value" id="caratVal">2.5 ct</div>
+          <div class="range-labels"><span>0.5 ct</span><span>5 ct</span></div>
+          <input type="range" min="5" max="50" value="25" step="1" id="caratSlider" oninput="updateCarat(this.value)">
+        </div>
+        <div class="expert-tip" id="expertTip">
+          <strong>Expert Tip:</strong> Most buyers choose VS1–VS2 clarity with G–H color — looks perfectly white and flawless to the naked eye, offering the best value at any carat size.
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- STEP 4: CONTEXT -->
+  <div class="step" id="step4">
+    <div class="step-label">04 / Context</div>
+    <h3 class="step-title">A little more about this purchase</h3>
+    <div style="background:var(--white);border:1px solid var(--border);border-radius:4px;padding:40px;">
+      <div style="margin-bottom:28px;">
+        <div class="param-label" style="margin-bottom:12px;">Budget</div>
+        <div class="budget-row">
+          <div class="field-group">
+            <label class="field-label">Minimum</label>
+            <input class="field-input" type="text" id="budgetMin" placeholder="e.g. $3,000">
+          </div>
+          <div class="field-group">
+            <label class="field-label">Maximum</label>
+            <input class="field-input" type="text" id="budgetMax" placeholder="e.g. $8,000">
+          </div>
+        </div>
+        <div style="margin-top:12px;">
+          <div class="range-value" id="budgetVal" style="font-size:18px;text-align:left;margin-bottom:8px;">$4k–$8k <span style="font-size:13px;color:var(--text-light);font-family:'DM Sans';">Recommendation</span></div>
+          <input type="range" min="0" max="100" value="40" step="1" id="budgetSlider" oninput="updateBudget(this.value)">
+          <div style="display:flex;justify-content:space-between;font-size:11px;color:var(--text-light);margin-top:8px;"><span>$1,000</span><span>Recommended range</span><span>$40,000</span></div>
+        </div>
+      </div>
+      <div style="margin-bottom:28px;">
+        <div class="param-label" style="margin-bottom:12px;">Occasion</div>
+        <div class="occasion-grid" id="occasionGrid">
+          <button class="occasion-btn selected" onclick="selectOccasion(this)">Engagement</button>
+          <button class="occasion-btn" onclick="selectOccasion(this)">Anniversary</button>
+          <button class="occasion-btn" onclick="selectOccasion(this)">Gift</button>
+          <button class="occasion-btn" onclick="selectOccasion(this)">Investment</button>
+        </div>
+      </div>
+      <div style="margin-bottom:28px;">
+        <div class="param-label" style="margin-bottom:12px;">Timeline</div>
+        <div class="timeline-grid" id="timelineGrid">
+          <button class="occasion-btn" onclick="selectOccasion(this)">Within 2 weeks</button>
+          <button class="occasion-btn selected" onclick="selectOccasion(this)">1 month</button>
+          <button class="occasion-btn" onclick="selectOccasion(this)">1–3 months</button>
+          <button class="occasion-btn" onclick="selectOccasion(this)">No rush</button>
+        </div>
+      </div>
+      <div>
+        <div class="param-label" style="margin-bottom:12px;">Have an Inspiration? <span style="text-transform:none;font-weight:300;font-size:12px;letter-spacing:0;">Upload photos of rings or styles you love.</span></div>
+        <div class="upload-zone" id="uploadZone" onclick="simulateUpload()">
+          <span class="upload-icon">⬆</span>
+          <div class="upload-text">Click to upload or drag and drop</div>
+          <div class="upload-hint">PNG, JPG up to 10MB</div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- STEP 5: CONTACT -->
+  <div class="step" id="step5">
+    <div class="step-label">05 / Contact Details</div>
+    <h3 class="step-title" id="step5Title">Where should we send your curate? <span class="step-subtitle">Our gemologists review every request personally.</span></h3>
+    <div style="background:var(--white);border:1px solid var(--border);border-radius:4px;padding:40px;">
+      <div class="contact-grid">
+        <div class="field-group">
+          <label class="field-label">Your Name</label>
+          <input class="field-input" type="text" id="nameInput" placeholder="e.g. Tanvir Ali">
+        </div>
+        <div class="field-group">
+          <label class="field-label">Email Address</label>
+          <input class="field-input" type="email" id="emailInput" placeholder="name@email.com">
+        </div>
+      </div>
+      <div class="field-group">
+        <label class="field-label">Additional Notes</label>
+        <textarea class="field-input" id="notesInput" rows="3" placeholder="e.g. looking for something classic, prefer yellow gold setting, ring size 6…"></textarea>
+      </div>
+    </div>
+    <div class="submit-section">
+      <button class="btn-submit" id="submitBtn" onclick="handleSubmit()">Find Your Perfect Diamond</button>
+      <p class="submit-note" id="submitNote">Your curate is reviewed by a certified gemologist within 48 hours.</p>
+    </div>
+  </div>
+
+</div>
+
+<!-- FLOATING SUMMARY PILL -->
+<div class="summary-pill" id="summaryPill">
+  <div class="summary-dot"></div>
+  <span id="summaryText">Round · Sparkle · Ideal · 2.5ct</span>
+</div>
+
+<script>
+// ─────────────────── SHAPES DATA ───────────────────
+const SHAPES = [
+  { name:'Oval', slide:1, svg:`<ellipse cx="22" cy="22" rx="14" ry="20" fill="none" stroke="currentColor" stroke-width="1.5"/><ellipse cx="22" cy="22" rx="8" ry="12" fill="none" stroke="currentColor" stroke-width="1" opacity=".5"/>` },
+  { name:'Round', slide:0, svg:`<circle cx="22" cy="22" r="18" fill="none" stroke="currentColor" stroke-width="1.5"/><circle cx="22" cy="22" r="10" fill="none" stroke="currentColor" stroke-width="1" opacity=".5"/>` },
+  { name:'Emerald', slide:2, svg:`<rect x="8" y="6" width="28" height="32" rx="2" fill="none" stroke="currentColor" stroke-width="1.5"/><rect x="14" y="12" width="16" height="20" rx="1" fill="none" stroke="currentColor" stroke-width="1" opacity=".5"/>` },
+  { name:'Marquise', slide:3, svg:`<ellipse cx="22" cy="22" rx="20" ry="12" fill="none" stroke="currentColor" stroke-width="1.5"/><ellipse cx="22" cy="22" rx="11" ry="6" fill="none" stroke="currentColor" stroke-width="1" opacity=".5"/>` },
+  { name:'Heart', slide:0, svg:`<path d="M22,36 C22,36 6,26 6,16 C6,10 11,6 16,8 C18,9 20,11 22,14 C24,11 26,9 28,8 C33,6 38,10 38,16 C38,26 22,36 22,36Z" fill="none" stroke="currentColor" stroke-width="1.5"/>` },
+  { name:'Radiant', slide:1, svg:`<rect x="8" y="8" width="28" height="28" rx="5" fill="none" stroke="currentColor" stroke-width="1.5"/><rect x="14" y="14" width="16" height="16" rx="3" fill="none" stroke="currentColor" stroke-width="1" opacity=".5"/>` },
+  { name:'Princess', slide:2, svg:`<rect x="7" y="7" width="30" height="30" fill="none" stroke="currentColor" stroke-width="1.5"/><rect x="14" y="14" width="16" height="16" fill="none" stroke="currentColor" stroke-width="1" opacity=".5"/>` },
+  { name:'Asscher', slide:3, svg:`<polygon points="14,6 30,6 38,14 38,30 30,38 14,38 6,30 6,14" fill="none" stroke="currentColor" stroke-width="1.5"/>` },
+  { name:'Pear', slide:0, svg:`<path d="M22,6 C28,6 36,12 36,22 C36,32 28,38 22,38 C16,38 8,32 8,22 C8,12 16,6 22,6Z" fill="none" stroke="currentColor" stroke-width="1.5"/>` },
+  { name:'Cushion', slide:1, svg:`<rect x="8" y="8" width="28" height="28" rx="8" fill="none" stroke="currentColor" stroke-width="1.5"/>` },
+];
+
+// ─────────────────── CAROUSEL DATA ───────────────────
+const SLIDES = [
+  { bg:'slide-bg-1', tag:'Round Brilliant', desc:'The classic choice — 58 facets\nfor maximum brilliance', svgPath:'M50,5 L95,35 L85,90 L15,90 L5,35 Z M50,5 L75,35 L50,90 L25,35 Z', extra:'<line x1="5" y1="35" x2="95" y2="35" stroke="rgba(255,255,255,0.4)" stroke-width="1"/>' },
+  { bg:'slide-bg-2', tag:'Oval & Radiant', desc:'Elongated elegance — creates\nthe illusion of larger size', svgPath:'', oval:true },
+  { bg:'slide-bg-3', tag:'Emerald & Princess', desc:'Art deco glamour — prismatic\nflashes of light and reflection', rect:true },
+  { bg:'slide-bg-4', tag:'Marquise & Asscher', desc:'Bold and distinctive — the largest\nsurface area of any cut', diamond:true },
+];
+
+function buildCarousel() {
+  const wrap = document.getElementById('carousel');
+  const dotsWrap = document.getElementById('carouselDots');
+  wrap.innerHTML = '';
+  dotsWrap.innerHTML = '';
+  SLIDES.forEach((s, i) => {
+    let svgInner = '';
+    if (s.oval) svgInner = `<ellipse cx="50" cy="50" rx="35" ry="48" fill="none" stroke="rgba(255,255,255,0.6)" stroke-width="1.5"/><ellipse cx="50" cy="50" rx="20" ry="30" fill="none" stroke="rgba(255,255,255,0.35)" stroke-width="1"/><line x1="15" y1="50" x2="85" y2="50" stroke="rgba(255,255,255,0.3)" stroke-width="1"/>`;
+    else if (s.rect) svgInner = `<rect x="15" y="15" width="70" height="70" rx="3" fill="none" stroke="rgba(255,255,255,0.6)" stroke-width="1.5"/><rect x="25" y="25" width="50" height="50" rx="2" fill="none" stroke="rgba(255,255,255,0.35)" stroke-width="1"/>`;
+    else if (s.diamond) svgInner = `<path d="M50,10 L90,50 L50,90 L10,50 Z" fill="none" stroke="rgba(255,255,255,0.6)" stroke-width="1.5"/><path d="M50,25 L75,50 L50,75 L25,50 Z" fill="none" stroke="rgba(255,255,255,0.35)" stroke-width="1"/>`;
+    else svgInner = `<polygon points="${s.svgPath}" fill="none" stroke="rgba(255,255,255,0.6)" stroke-width="1.5"/>${s.extra||''}`;
+    wrap.innerHTML += `
+      <div class="carousel-slide ${i===0?'active':''} ${s.bg}">
+        <div style="width:100%;height:100%;display:flex;align-items:center;justify-content:center;">
+          <svg width="160" height="160" viewBox="0 0 100 100" style="opacity:0.22">${svgInner}</svg>
+        </div>
+        <div class="carousel-caption">
+          <span class="caption-tag">${s.tag}</span>
+          <p class="caption-text">${s.desc.replace('\n','<br>')}</p>
+        </div>
+      </div>`;
+    dotsWrap.innerHTML += `<div class="dot ${i===0?'active':''}" onclick="goToSlide(${i})"></div>`;
+  });
+}
+
+function buildShapes(selectedIdx = 1) {
+  const grid = document.getElementById('shapesGrid');
+  grid.innerHTML = '';
+  SHAPES.forEach((sh, i) => {
+    grid.innerHTML += `
+      <div class="shape-card ${i===selectedIdx?'selected':''}" onclick="selectShape(this,'${sh.name}',${sh.slide})">
+        <div class="shape-check"><svg width="8" height="8" viewBox="0 0 8 8"><polyline points="1,4 3,6 7,2" stroke="white" stroke-width="1.5" fill="none"/></svg></div>
+        <svg class="shape-svg" viewBox="0 0 44 44">${sh.svg}</svg>
+        <span class="shape-name">${sh.name}</span>
+      </div>`;
+  });
+}
+
+const PREFS = [
+  { title:'Carat', desc:'I want it to look impressive and substantial' },
+  { title:'Sparkle', desc:'Maximum brilliance and fire — catch every eye' },
+  { title:'Color Purity', desc:'Perfectly white and bright, no warmth' },
+  { title:'Flawless', desc:'Internally clean and graded pristine' },
+];
+function buildPrefs(selectedIdx = 1) {
+  const grid = document.getElementById('prefGrid');
+  grid.innerHTML = '';
+  PREFS.forEach((p, i) => {
+    grid.innerHTML += `
+      <div class="pref-card ${i===selectedIdx?'selected':''}" onclick="selectPref(this)">
+        <div class="pref-indicator"></div>
+        <div class="pref-title">${p.title}</div>
+        <div class="pref-desc">${p.desc}</div>
+      </div>`;
+  });
+}
+
+// ─────────────────── CAROUSEL LOGIC ───────────────────
+let currentSlide = 0;
+let autoTimer;
+
+function goToSlide(n) {
+  const slides = document.querySelectorAll('.carousel-slide');
+  const dots = document.querySelectorAll('.dot');
+  slides[currentSlide].classList.remove('active');
+  dots[currentSlide].classList.remove('active');
+  currentSlide = n;
+  slides[currentSlide].classList.add('active');
+  dots[currentSlide].classList.add('active');
+}
+function nextSlide() { goToSlide((currentSlide+1) % SLIDES.length); resetAuto(); }
+function prevSlide() { goToSlide((currentSlide-1+SLIDES.length) % SLIDES.length); resetAuto(); }
+function resetAuto() { clearInterval(autoTimer); autoTimer = setInterval(() => goToSlide((currentSlide+1)%SLIDES.length), 4500); }
+
+// ─────────────────── INTERACTIONS ───────────────────
+function selectShape(el, name, slideIdx) {
+  document.querySelectorAll('.shape-card').forEach(c => c.classList.remove('selected'));
+  el.classList.add('selected');
+  goToSlide(slideIdx % SLIDES.length);
+  resetAuto();
+  updateSummary();
+}
+function selectPref(el) {
+  document.querySelectorAll('.pref-card').forEach(c => c.classList.remove('selected'));
+  el.classList.add('selected');
+  updateSummary();
+}
+function selectParam(el) {
+  el.closest('.param-options').querySelectorAll('.param-btn').forEach(b => b.classList.remove('selected'));
+  el.classList.add('selected');
+  updateSummary();
+}
+function selectOccasion(el) {
+  el.parentElement.querySelectorAll('button').forEach(b => b.classList.remove('selected'));
+  el.classList.add('selected');
+}
+function updateCarat(val) {
+  document.getElementById('caratVal').textContent = (val/10).toFixed(1)+' ct';
+  updateSummary();
+}
+const budgetStops = ['$1k–$2k','$2k–$4k','$4k–$8k','$8k–$15k','$15k–$30k','$40k+'];
+function updateBudget(val) {
+  const label = budgetStops[Math.min(Math.floor(val/17), budgetStops.length-1)];
+  document.getElementById('budgetVal').innerHTML = label+' <span style="font-size:13px;color:var(--text-light);font-family:\'DM Sans\';">Range</span>';
+}
+function updateSummary() {
+  const shape = document.querySelector('.shape-card.selected .shape-name')?.textContent || 'Round';
+  const pref = document.querySelector('.pref-card.selected .pref-title')?.textContent || 'Sparkle';
+  const cut = document.querySelector('#cutOptions .param-btn.selected .param-btn-top')?.textContent || 'Ideal';
+  const carat = document.getElementById('caratVal')?.textContent || '2.5ct';
+  document.getElementById('summaryText').textContent = `${shape} · ${pref} · ${cut} · ${carat}`;
+}
+function scrollToConfig() {
+  document.getElementById('configurator').scrollIntoView({ behavior:'smooth' });
+}
+
+// ─────────────────── SCROLL ───────────────────
+window.addEventListener('scroll', () => {
+  const doc = document.documentElement;
+  const pct = (doc.scrollTop / (doc.scrollHeight - doc.clientHeight)) * 100;
+  document.getElementById('progressBar').style.width = pct+'%';
+  const pill = document.getElementById('summaryPill');
+  pill.classList.toggle('visible', doc.scrollTop > window.innerHeight * 0.5);
+});
+
+// ─────────────────── INTERSECTION OBSERVER ───────────────────
+const observer = new IntersectionObserver(entries => {
+  entries.forEach(e => {
+    if (e.isIntersecting) {
+      e.target.classList.add('visible');
+      if (e.target.id === 'step3') setTimeout(() => document.getElementById('expertTip').classList.add('visible'), 500);
+    }
+  });
+}, { threshold: 0.1 });
+['configHeader','step1','step2','step3','step4','step5'].forEach(id => {
+  const el = document.getElementById(id);
+  if (el) observer.observe(el);
+});
+
+// ─────────────────── UPLOAD ───────────────────
+function simulateUpload() {
+  const z = document.getElementById('uploadZone');
+  z.style.borderColor = 'var(--gold)'; z.style.background = 'var(--gold-pale)';
+  z.innerHTML = `<span class="upload-icon" style="opacity:1">✓</span><div class="upload-text" style="color:var(--navy);font-weight:500">inspiration_ring.jpg uploaded</div><div class="upload-hint" style="color:var(--gold)">Click to add another</div>`;
+  setTimeout(() => {
+    z.style.borderColor = ''; z.style.background = '';
+    z.innerHTML = `<span class="upload-icon">⬆</span><div class="upload-text">Click to upload or drag and drop</div><div class="upload-hint">PNG, JPG up to 10MB</div>`;
+  }, 2500);
+}
+const uz = document.getElementById('uploadZone');
+uz.addEventListener('dragover', e => { e.preventDefault(); uz.style.borderColor = 'var(--gold)'; });
+uz.addEventListener('dragleave', () => { uz.style.borderColor=''; });
+uz.addEventListener('drop', e => { e.preventDefault(); uz.style.borderColor=''; simulateUpload(); });
+
+// ─────────────────── SUBMIT ───────────────────
+function handleSubmit() {
+  const btn = document.getElementById('submitBtn');
+  btn.textContent = 'Sending to your gemologist…';
+  btn.style.background = 'var(--gold)'; btn.style.color = 'var(--navy)';
+  setTimeout(() => {
+    btn.textContent = '✓ Request received — we\'ll be in touch within 48h';
+    btn.style.background = '#2D6A4F'; btn.style.color = 'white';
+  }, 1800);
+}
+
+// ─────────────────── MOBILE MENU ───────────────────
+function toggleMenu() {
+  const menu = document.getElementById('mobileMenu');
+  const ham = document.getElementById('hamburger');
+  menu.classList.toggle('open');
+  ham.classList.toggle('open');
+}
+
+// ─────────────────── SCENARIO SWITCHER ───────────────────
+const SCENARIOS = {
+  default: {
+    heroBadge: null,
+    heroTitle: 'Find your <em>perfect</em><br>diamond.',
+    heroDesc: 'Skip the overwhelming catalog. Tell us your vision and our gemologists will hand-pick 3–5 stunning options tailored for you.',
+    heroCtaBtn: 'Start Configuring',
+    configTitle: 'Configure your perfect diamond.',
+    configSub: 'Tell us your vision and our experts will hand-pick 3–5 stunning options tailored for you.',
+    contextBanner: null,
+    selectedShape: 1,
+    selectedPref: 1,
+    selectedCut: 0,
+    selectedColor: 0,
+    selectedClarity: 1,
+    carat: 25,
+    occasionIdx: 0,
+    timelineIdx: 1,
+    name: '', email: '', notes: '',
+    submitLabel: 'Find Your Perfect Diamond',
+    submitNote: 'Your curate is reviewed by a certified gemologist within 48 hours.',
+    stepsHidden: [],
+  },
+  returning: {
+    heroBadge: { text: 'Welcome back, Sarah', color: 'var(--gold)' },
+    heroTitle: 'Welcome back,<br><em>Sarah.</em>',
+    heroDesc: 'Your previous preferences have been saved. Update any details and we\'ll find your next perfect diamond.',
+    heroCtaBtn: 'Update My Preferences',
+    configTitle: 'Update your diamond preferences.',
+    configSub: 'We\'ve pre-filled your last choices. Just change what you\'d like and resubmit.',
+    contextBanner: {
+      icon: '↩',
+      title: 'Pre-filled from your last request',
+      body: 'We\'ve loaded your previous preferences — Round, VS1, G–H color, ~2ct. Update anything and we\'ll find new options for you.',
+      bg: '#EEF4FF',
+      borderColor: '#3B82F6',
+    },
+    selectedShape: 1,
+    selectedPref: 1,
+    selectedCut: 0,
+    selectedColor: 1,
+    selectedClarity: 1,
+    carat: 20,
+    occasionIdx: 1,
+    timelineIdx: 2,
+    name: 'Sarah Chen', email: 'sarah@example.com',
+    notes: 'Looking for something a bit larger than last time, still prefer platinum setting.',
+    submitLabel: 'Update My Curate Request',
+    submitNote: 'We\'ll compare against your previous submission and find new matches.',
+    stepsHidden: [],
+  },
+  minimal: {
+    heroBadge: { text: 'Quick 2-minute form', color: 'var(--gold)' },
+    heroTitle: 'Tell us what<br>you <em>love.</em>',
+    heroDesc: 'Two quick questions and a budget. Our gemologists take care of the rest.',
+    heroCtaBtn: 'Start — takes 2 mins',
+    configTitle: 'Quick diamond finder.',
+    configSub: 'Just your shape, priority, and budget. We\'ll handle the technical details.',
+    contextBanner: {
+      icon: '⚡',
+      title: 'Simplified mode — just the essentials',
+      body: 'We\'ve hidden the technical parameters. Our gemologists will apply best practices automatically based on your budget.',
+      bg: 'var(--gold-pale)',
+      borderColor: 'var(--gold)',
+    },
+    selectedShape: 1,
+    selectedPref: 1,
+    selectedCut: 0,
+    selectedColor: 0,
+    selectedClarity: 1,
+    carat: 25,
+    occasionIdx: 0,
+    timelineIdx: 3,
+    name: '', email: '', notes: '',
+    submitLabel: 'Find My Diamond',
+    submitNote: 'Response within 24 hours. No commitment required.',
+    stepsHidden: ['step3'],
+  },
+  gift: {
+    heroBadge: { text: 'Gift buying mode', color: '#E070A0' },
+    heroTitle: 'Find the<br><em>perfect gift.</em>',
+    heroDesc: 'Shopping for someone special? Tell us about them and we\'ll curate options they\'ll love.',
+    heroCtaBtn: 'Find a Gift',
+    configTitle: 'Find the perfect diamond gift.',
+    configSub: 'Tell us about the occasion and the person — our experts will do the rest.',
+    contextBanner: {
+      icon: '🎁',
+      title: 'Gift buying mode',
+      body: 'We\'ve adjusted the form for gift shoppers. Focus on occasion and budget — we\'ll handle the technical choices to make it truly special.',
+      bg: '#FFF0F5',
+      borderColor: '#E070A0',
+    },
+    selectedShape: 0,
+    selectedPref: 0,
+    selectedCut: 1,
+    selectedColor: 1,
+    selectedClarity: 1,
+    carat: 15,
+    occasionIdx: 2,
+    timelineIdx: 0,
+    name: '', email: '',
+    notes: 'Buying for my partner — she loves delicate, classic styles. Unsure of ring size.',
+    submitLabel: 'Find the Perfect Gift',
+    submitNote: 'We\'ll include gift-wrapping options and a personal note service.',
+    stepsHidden: [],
+  },
+};
+
+let currentScenario = 'default';
+
+function setScenario(btn, type) {
+  if (type === currentScenario) return;
+  currentScenario = type;
+
+  document.querySelectorAll('.scenario-btn').forEach(b => b.classList.remove('active'));
+  btn.classList.add('active');
+
+  const s = SCENARIOS[type];
+
+  // Hero badge
+  const badge = document.getElementById('heroBadge');
+  if (s.heroBadge) {
+    badge.style.display = 'inline-flex';
+    badge.querySelector('span:last-child').textContent = s.heroBadge.text;
+    badge.style.color = s.heroBadge.color;
+    badge.style.borderColor = s.heroBadge.color + '55';
+    badge.style.background = s.heroBadge.color + '18';
+    badge.querySelector('.scenario-badge-dot').style.background = s.heroBadge.color;
+    setTimeout(() => badge.classList.add('show'), 50);
+  } else {
+    badge.classList.remove('show');
+    setTimeout(() => { badge.style.display = 'none'; }, 400);
+  }
+
+  // Animate hero text change
+  const heroTitle = document.getElementById('heroTitle');
+  const heroDesc = document.getElementById('heroDesc');
+  const heroCtaBtn = document.getElementById('heroCtaBtn');
+  [heroTitle, heroDesc, heroCtaBtn].forEach(el => { el.style.opacity = '0'; el.style.transform = 'translateY(8px)'; });
+  setTimeout(() => {
+    heroTitle.innerHTML = s.heroTitle;
+    heroDesc.textContent = s.heroDesc;
+    heroCtaBtn.textContent = s.heroCtaBtn;
+    [heroTitle, heroDesc, heroCtaBtn].forEach(el => {
+      el.style.transition = 'opacity 0.4s, transform 0.4s';
+      el.style.opacity = '1'; el.style.transform = 'translateY(0)';
+    });
+  }, 200);
+
+  // Config header
+  document.getElementById('configTitle').textContent = s.configTitle;
+  document.getElementById('configSub').textContent = s.configSub;
+
+  // Context banner
+  const ctx = document.getElementById('scenarioContext');
+  if (s.contextBanner) {
+    ctx.classList.add('show');
+    document.getElementById('contextIcon').textContent = s.contextBanner.icon;
+    document.getElementById('contextTitle').textContent = s.contextBanner.title;
+    document.getElementById('contextBody').textContent = s.contextBanner.body;
+    ctx.style.background = s.contextBanner.bg;
+    ctx.style.borderLeftColor = s.contextBanner.borderColor;
+  } else {
+    ctx.classList.remove('show');
+  }
+
+  // Show/hide steps
+  ['step1','step2','step3','step4','step5'].forEach(id => {
+    const el = document.getElementById(id);
+    el.style.display = s.stepsHidden.includes(id) ? 'none' : '';
+  });
+
+  // Rebuild shapes + prefs with correct selection
+  buildShapes(s.selectedShape);
+  buildPrefs(s.selectedPref);
+
+  // Set param selections
+  const setParamGroup = (groupId, idx) => {
+    const btns = document.querySelectorAll(`#${groupId} .param-btn`);
+    btns.forEach((b, i) => b.classList.toggle('selected', i === idx));
+  };
+  setParamGroup('cutOptions', s.selectedCut);
+  setParamGroup('colorOptions', s.selectedColor);
+  setParamGroup('clarityOptions', s.selectedClarity);
+
+  // Carat
+  document.getElementById('caratSlider').value = s.carat;
+  document.getElementById('caratVal').textContent = (s.carat/10).toFixed(1)+' ct';
+
+  // Occasion
+  document.querySelectorAll('#occasionGrid .occasion-btn').forEach((b, i) => b.classList.toggle('selected', i===s.occasionIdx));
+  document.querySelectorAll('#timelineGrid .occasion-btn').forEach((b, i) => b.classList.toggle('selected', i===s.timelineIdx));
+
+  // Contact fields
+  document.getElementById('nameInput').value = s.name || '';
+  document.getElementById('emailInput').value = s.email || '';
+  document.getElementById('notesInput').value = s.notes || '';
+
+  // Submit
+  const submitBtn = document.getElementById('submitBtn');
+  submitBtn.textContent = s.submitLabel;
+  submitBtn.style.background = ''; submitBtn.style.color = '';
+  document.getElementById('submitNote').textContent = s.submitNote;
+
+  // Update summary pill
+  updateSummary();
+
+  // Re-scroll to top smoothly
+  window.scrollTo({ top: 0, behavior: 'smooth' });
+}
+
+// ─────────────────── INIT ───────────────────
+buildCarousel();
+buildShapes(1);
+buildPrefs(1);
+autoTimer = setInterval(() => goToSlide((currentSlide+1)%SLIDES.length), 4500);
+</script>
+</body>
+</html>
