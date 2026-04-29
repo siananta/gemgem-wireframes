@@ -1,0 +1,421 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>GemGem · Diamond Concierge</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,400;0,500;1,300;1,400&family=DM+Sans:wght@300;400;500&display=swap" rel="stylesheet">
+<style>
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+:root {
+  --bg-site: #FCFBFA;
+  --navy: #1A1F2E;
+  --navy-muted: #2D3348;
+  --brand-blue: #3B82F6;
+  --brand-blue-deep: #1E40AF;
+  --text-main: #111827;
+  --text-secondary: #64748B;
+  --white: #FFFFFF;
+  --border-light: rgba(26, 31, 46, 0.06);
+  --border-focus: rgba(59, 130, 246, 0.3);
+  --nav-h: 80px;
+  --shadow-lux: 0 20px 40px -10px rgba(0, 0, 0, 0.08);
+}
+
+body {
+  font-family: 'DM Sans', sans-serif;
+  background: var(--bg-site);
+  color: var(--text-main);
+  overflow-x: hidden;
+  -webkit-font-smoothing: antialiased;
+}
+
+/* ─────────────────── NAV ─────────────────── */
+nav {
+  position: fixed; top: 0; width: 100%; height: var(--nav-h);
+  background: rgba(252, 251, 250, 0.85);
+  backdrop-filter: blur(12px);
+  border-bottom: 1px solid var(--border-light);
+  display: flex; align-items: center; justify-content: space-between;
+  padding: 0 60px; z-index: 100;
+}
+.logo {
+  font-family: 'Cormorant Garamond', serif;
+  font-size: 26px; font-weight: 500;
+  text-transform: uppercase; letter-spacing: 0.15em; color: var(--navy);
+}
+
+/* ─────────────────── PLP BACKGROUND ─────────────────── */
+.plp-container {
+  padding: calc(var(--nav-h) + 60px) 60px 100px;
+  max-width: 1600px;
+  margin: 0 auto;
+  transition: filter 0.6s cubic-bezier(0.4, 0, 0.2, 1);
+}
+.plp-header { margin-bottom: 50px; }
+.plp-header h1 { 
+  font-family: 'Cormorant Garamond', serif; 
+  font-size: 42px; font-weight: 300; 
+  letter-spacing: -0.01em;
+  margin-bottom: 8px;
+}
+.plp-header p { font-size: 14px; color: var(--text-secondary); letter-spacing: 0.02em; }
+
+.diamond-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+  gap: 32px;
+}
+.diamond-item {
+  background: white; border: 1px solid var(--border-light); border-radius: 4px;
+  padding: 24px; transition: all 0.4s ease;
+  cursor: pointer;
+}
+.diamond-item:hover {
+  border-color: var(--brand-blue);
+  box-shadow: 0 10px 30px rgba(0,0,0,0.03);
+}
+.diamond-item .img-box {
+  height: 220px; background: #fafafa; border-radius: 2px; margin-bottom: 20px;
+  display: flex; align-items: center; justify-content: center; 
+  color: var(--navy); opacity: 0.85;
+}
+.diamond-item h3 { font-family: 'Cormorant Garamond', serif; font-size: 20px; font-weight: 400; margin-bottom: 6px; }
+.diamond-item p { font-size: 13px; color: var(--text-secondary); text-transform: uppercase; letter-spacing: 0.05em; }
+.price-tag { margin-top: 16px; font-weight: 500; font-size: 16px; color: var(--navy); }
+
+/* ─────────────────── CHATBOT OVERLAY ─────────────────── */
+.chat-fab-wrap {
+  position: fixed; bottom: 40px; right: 40px; z-index: 1000;
+  display: flex; flex-direction: column; align-items: flex-end; gap: 16px;
+}
+
+.chat-bubble-hint {
+  background: white;
+  padding: 12px 20px;
+  border-radius: 12px;
+  box-shadow: 0 10px 25px rgba(0,0,0,0.05);
+  border: 1px solid var(--border-light);
+  font-size: 14px;
+  color: var(--navy);
+  position: relative;
+  animation: fadeInHint 0.8s ease forwards;
+  animation-delay: 1.5s;
+  opacity: 0;
+  max-width: 220px;
+  line-height: 1.4;
+}
+.chat-bubble-hint::after {
+  content: '';
+  position: absolute; bottom: -6px; right: 24px;
+  width: 12px; height: 12px; background: white;
+  border-right: 1px solid var(--border-light);
+  border-bottom: 1px solid var(--border-light);
+  transform: rotate(45deg);
+}
+
+@keyframes fadeInHint {
+  from { opacity: 0; transform: translateY(10px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+.chat-fab {
+  background: var(--navy); color: white; border-radius: 100px;
+  padding: 18px 32px; display: flex; align-items: center; gap: 14px;
+  cursor: pointer; box-shadow: 0 15px 35px rgba(26, 31, 46, 0.2);
+  font-weight: 500; border: none; transition: all 0.3s cubic-bezier(0.34, 1.56, 0.64, 1);
+  font-size: 14px; letter-spacing: 0.03em;
+}
+.chat-fab:hover { transform: translateY(-4px); background: var(--brand-blue); }
+
+.chat-panel {
+  position: fixed; bottom: 110px; right: 40px; width: 460px; height: 75vh;
+  background: rgba(255, 255, 255, 0.98); border-radius: 24px; 
+  box-shadow: var(--shadow-lux);
+  z-index: 1000; display: flex; flex-direction: column; overflow: hidden;
+  transform: translateY(30px); opacity: 0; pointer-events: none;
+  transition: all 0.5s cubic-bezier(0.16, 1, 0.3, 1);
+  border: 1px solid var(--border-light);
+}
+.chat-panel.open { transform: translateY(0); opacity: 1; pointer-events: auto; }
+
+.chat-header {
+  background: var(--bg-site); color: var(--navy); padding: 24px;
+  display: flex; justify-content: space-between; align-items: center;
+  border-bottom: 1px solid var(--border-light);
+}
+.chat-body { flex: 1; overflow-y: auto; padding: 30px; display: flex; flex-direction: column; gap: 20px; }
+
+.msg { max-width: 85%; padding: 14px 20px; border-radius: 18px; font-size: 14px; line-height: 1.6; }
+.msg.bot { background: var(--bg-site); color: var(--navy); align-self: flex-start; border-bottom-left-radius: 4px; border: 1px solid var(--border-light); }
+.msg.user { background: var(--brand-blue); color: white; align-self: flex-end; border-bottom-right-radius: 4px; box-shadow: 0 4px 15px rgba(59, 130, 246, 0.2); }
+
+.choices { display: flex; flex-wrap: wrap; gap: 10px; margin-top: 10px; }
+.choice-btn {
+  padding: 10px 18px; background: white; border: 1px solid var(--border-light);
+  color: var(--navy); border-radius: 100px; font-size: 13px; font-weight: 500; cursor: pointer;
+  transition: all 0.2s ease;
+}
+.choice-btn:hover { border-color: var(--brand-blue); color: var(--brand-blue); background: var(--brand-blue-pale); }
+
+/* Icons for Shape */
+.shape-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 12px; width: 100%; margin-top: 10px; }
+.shape-btn {
+  border: 1px solid var(--border-light); background: white; border-radius: 12px; padding: 16px;
+  text-align: center; cursor: pointer; font-size: 12px; transition: all 0.3s ease;
+  color: var(--navy);
+}
+.shape-btn:hover { border-color: var(--brand-blue); transform: translateY(-2px); }
+.shape-btn svg { width: 28px; height: 28px; margin-bottom: 8px; display: block; margin-inline: auto; opacity: 0.7; }
+
+/* Form Inputs */
+.chat-input-area { padding: 24px; background: var(--bg-site); border-top: 1px solid var(--border-light); display: none; gap: 12px; }
+.chat-input-area.active { display: flex; animation: slideUp 0.4s ease; }
+.chat-input { 
+  flex: 1; border: 1px solid var(--border-light); border-radius: 100px; padding: 12px 20px; 
+  font-family: inherit; font-size: 14px; outline: none; transition: border-color 0.3s;
+}
+.chat-input:focus { border-color: var(--brand-blue); }
+.send-btn { background: var(--navy); border: none; color: white; border-radius: 100px; padding: 12px 24px; cursor: pointer; font-weight: 500; }
+
+@keyframes slideUp { from { transform: translateY(10px); opacity: 0; } to { transform: translateY(0); opacity: 1; } }
+
+/* ─────────────────── SCROLLBAR ─────────────────── */
+.chat-body::-webkit-scrollbar { width: 4px; }
+.chat-body::-webkit-scrollbar-track { background: transparent; }
+.chat-body::-webkit-scrollbar-thumb { background: rgba(0,0,0,0.05); border-radius: 10px; }
+</style>
+</head>
+<body>
+
+<nav>
+  <div class="logo">GemGem</div>
+  <div style="font-size: 12px; text-transform: uppercase; letter-spacing: 0.1em; color: var(--text-secondary);">The Diamond Authority</div>
+</nav>
+
+<div class="plp-container" id="plp">
+  <div class="plp-header">
+    <h1 id="plpTitle">Curated Loose Diamonds</h1>
+    <p>Viewing <span id="count" style="font-weight: 500; color: var(--navy);">12</span> master-cut ethical diamonds.</p>
+  </div>
+  <div class="diamond-grid" id="diamondGrid">
+    <!-- Initial Mock Grid -->
+  </div>
+</div>
+
+<div class="chat-fab-wrap">
+  <div class="chat-bubble-hint" id="chatHint">
+    I am here to help you find the perfect stone.
+  </div>
+  <button class="chat-fab" onclick="toggleChat()">
+    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"></path></svg>
+    Bespoke Concierge
+  </button>
+</div>
+
+<div class="chat-panel" id="chatPanel">
+  <div class="chat-header">
+    <div style="display:flex; align-items:center; gap:14px;">
+      <div style="width:38px; height:38px; background:var(--brand-blue); color: white; border-radius:50%; display:flex; align-items:center; justify-content:center; font-family:'Cormorant Garamond'; font-size: 20px;">C</div>
+      <div>
+        <div style="font-weight:500; font-size: 15px;">Clara</div>
+        <div style="font-size: 11px; text-transform: uppercase; letter-spacing: 0.05em; opacity: 0.6;">Senior Concierge</div>
+      </div>
+    </div>
+    <button onclick="toggleChat()" style="background:none; border:none; color:var(--navy); cursor:pointer; font-size:20px; opacity: 0.4;">✕</button>
+  </div>
+  <div class="chat-body" id="chatBody"></div>
+  <div class="chat-input-area" id="inputArea">
+    <input type="text" class="chat-input" id="chatInput" placeholder="Enter your details...">
+    <button class="send-btn" id="sendBtn">Send</button>
+  </div>
+</div>
+
+<script>
+let chatOpen = false;
+let userProfile = { shape: 'Any' };
+
+const baseDiamonds = [
+  { shape: 'Round', carat: 1.02, color: 'G', clarity: 'VS1', price: '$5,200' },
+  { shape: 'Oval', carat: 1.50, color: 'F', clarity: 'VVS2', price: '$8,400' },
+  { shape: 'Emerald', carat: 2.05, color: 'E', clarity: 'VS2', price: '$12,100' },
+  { shape: 'Pear', carat: 0.90, color: 'H', clarity: 'SI1', price: '$3,900' },
+  { shape: 'Radiant', carat: 1.20, color: 'G', clarity: 'VS1', price: '$6,800' },
+  { shape: 'Cushion', carat: 1.80, color: 'D', clarity: 'VVS1', price: '$15,400' },
+  { shape: 'Princess', carat: 1.10, color: 'F', clarity: 'VS1', price: '$4,600' },
+  { shape: 'Asscher', carat: 1.40, color: 'G', clarity: 'VS2', price: '$7,200' },
+  { shape: 'Round', carat: 0.70, color: 'F', clarity: 'SI1', price: '$2,800' }
+];
+
+function renderGrid(filterShape = 'Any') {
+  const grid = document.getElementById('diamondGrid');
+  grid.style.opacity = '0';
+  
+  setTimeout(() => {
+    grid.innerHTML = '';
+    const filtered = filterShape === 'Any' ? baseDiamonds : baseDiamonds.filter(d => d.shape === filterShape);
+    
+    filtered.forEach((d, i) => {
+      const item = document.createElement('div');
+      item.className = 'diamond-item';
+      item.style.animation = `slideUp 0.5s ease ${i * 0.05}s forwards`;
+      item.style.opacity = '0';
+      item.innerHTML = `
+        <div class="img-box">
+          <svg width="80" height="80" viewBox="0 0 100 100" fill="none" stroke="currentColor" stroke-width="0.8">
+            <path d="M50 15 L85 45 L70 85 L30 85 L15 45 Z" />
+            <path d="M50 15 L65 45 L50 85 L35 45 Z" />
+          </svg>
+        </div>
+        <p>${d.color} Color • ${d.clarity} Clarity</p>
+        <h3>${d.carat}ct ${d.shape} Cut</h3>
+        <div class="price-tag">${d.price}</div>
+      `;
+      grid.appendChild(item);
+    });
+    document.getElementById('count').textContent = filtered.length;
+    grid.style.opacity = '1';
+  }, 300);
+}
+
+renderGrid();
+
+function toggleChat() {
+  chatOpen = !chatOpen;
+  document.getElementById('chatPanel').classList.toggle('open', chatOpen);
+  document.getElementById('plp').style.filter = chatOpen ? 'grayscale(0.2) blur(8px)' : 'none';
+  document.getElementById('chatHint').style.display = 'none';
+  
+  if (chatOpen && !document.getElementById('chatBody').innerHTML) {
+    setTimeout(startFlow, 400);
+  }
+}
+
+function addMsg(text, sender = 'bot', component = null) {
+  const body = document.getElementById('chatBody');
+  const m = document.createElement('div');
+  m.className = `msg ${sender}`;
+  m.innerHTML = text;
+  body.appendChild(m);
+  if (component) body.appendChild(component);
+  body.scrollTop = body.scrollHeight;
+}
+
+function startFlow() {
+  const shapeWrap = document.createElement('div');
+  shapeWrap.className = 'shape-grid';
+  const shapes = ['Round', 'Oval', 'Emerald', 'Pear', 'Radiant', 'Cushion', 'Asscher', 'Princess', 'Marquise'];
+  shapes.forEach(s => {
+    const btn = document.createElement('div');
+    btn.className = 'shape-btn';
+    btn.innerHTML = `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1"><path d="M12 2 L21 9 L18 21 L6 21 L3 9 Z"/></svg><span>${s}</span>`;
+    btn.onclick = () => {
+      shapeWrap.style.opacity = '0.2'; shapeWrap.style.pointerEvents = 'none';
+      userProfile.shape = s;
+      addMsg(s, 'user');
+      renderGrid(s);
+      setTimeout(askBudget, 800);
+    };
+    shapeWrap.appendChild(btn);
+  });
+
+  addMsg("Good day. I'm <strong>Clara</strong>, your senior concierge. To help me find your perfect stone, let's start with your preferred <strong>diamond shape</strong>.", 'bot', shapeWrap);
+}
+
+function askBudget() {
+  const choices = document.createElement('div');
+  choices.className = 'choices';
+  ['Under $5k', '$5k - $10k', '$10k - $20k', '$20k+'].forEach(l => {
+    const b = document.createElement('button');
+    b.className = 'choice-btn';
+    b.textContent = l;
+    b.onclick = () => {
+      choices.style.opacity = '0.2'; choices.style.pointerEvents = 'none';
+      addMsg(l, 'user');
+      setTimeout(askCarat, 700);
+    };
+    choices.appendChild(b);
+  });
+  addMsg("Lovely. And what is the <strong>investment range</strong> you're considering for this acquisition?", 'bot', choices);
+}
+
+function askCarat() {
+  const choices = document.createElement('div');
+  choices.className = 'choices';
+  ['< 1.0ct', '1.0 - 1.5ct', '1.5 - 2.0ct', '2.0ct+'].forEach(l => {
+    const b = document.createElement('button');
+    b.className = 'choice-btn';
+    b.textContent = l;
+    b.onclick = () => {
+      choices.style.opacity = '0.2'; choices.style.pointerEvents = 'none';
+      addMsg(l, 'user');
+      setTimeout(askThe4Cs, 700);
+    };
+    choices.appendChild(b);
+  });
+  addMsg("What is your desired <strong>carat weight</strong>? This helps me narrow down the most impressive stones in your range.", 'bot', choices);
+}
+
+function askThe4Cs() {
+  const choices = document.createElement('div');
+  choices.className = 'choices';
+  ['Ultra Premium (D-F, VS+)', 'Top Value (G-H, SI1+)', 'I need advice'].forEach(l => {
+    const b = document.createElement('button');
+    b.className = 'choice-btn';
+    b.textContent = l;
+    b.onclick = () => {
+      choices.style.opacity = '0.2'; choices.style.pointerEvents = 'none';
+      addMsg(l, 'user');
+      setTimeout(askOccasion, 700);
+    };
+    choices.appendChild(b);
+  });
+  addMsg("Regarding <strong>Color & Clarity</strong> — are you looking for the purest collectors' quality, or do you prefer a stone with the best visual impact for the value?", 'bot', choices);
+}
+
+function askOccasion() {
+  const choices = document.createElement('div');
+  choices.className = 'choices';
+  ['Engagement', 'Anniversary', 'Celebration', 'Other'].forEach(l => {
+    const b = document.createElement('button');
+    b.className = 'choice-btn';
+    b.textContent = l;
+    b.onclick = () => {
+      choices.style.opacity = '0.2'; choices.style.pointerEvents = 'none';
+      addMsg(l, 'user');
+      setTimeout(finalLead, 800);
+    };
+    choices.appendChild(b);
+  });
+  addMsg("One last thing to help me personalize my search: Is this for an <strong>Engagement</strong> or another milestone?", 'bot', choices);
+}
+
+function finalLead() {
+  addMsg("I have a wonderful vision of what you're looking for. I'll personally audit our latest arrivals for the finest <strong>" + userProfile.shape + "</strong>. May I have your <strong>name</strong> to address the curation correctly?", 'bot');
+  const area = document.getElementById('inputArea');
+  area.classList.add('active');
+  const input = document.getElementById('chatInput');
+  const send = document.getElementById('sendBtn');
+  
+  let step = 0; 
+  send.onclick = () => {
+    if (!input.value) return;
+    const val = input.value;
+    addMsg(val, 'user');
+    input.value = '';
+    if (step === 0) {
+      step = 1;
+      setTimeout(() => addMsg("Thank you. And which <strong>email address</strong> shall I use to send the high-resolution images and certificates?", 'bot'), 700);
+    } else {
+      area.classList.remove('active');
+      setTimeout(() => {
+        addMsg("Understood. I will begin my search immediately and send over my top recommendations within the hour. It was a pleasure assisting you.", 'bot');
+      }, 800);
+    }
+  };
+}
+</script>
+</body>
+</html>
