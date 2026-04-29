@@ -1,0 +1,1353 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>GemGem · List Your Diamond</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,400;0,500;1,300;1,400&family=DM+Sans:opsz,wght@9..40,300;9..40,400;9..40,500;9..40,600&display=swap" rel="stylesheet">
+<style>
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+:root{
+  --bg:#F5F6F8;
+  --bg2:#ECEEF2;
+  --navy:#0F1729;
+  --navy2:#1A2640;
+  --navy3:#243052;
+  --blue:#1A4DB3;
+  --blue2:#2563EB;
+  --blue3:#4F8EF7;
+  --blue-light:#DBEAFE;
+  --blue-pale:#EFF6FF;
+  --blue-xpale:#F4F8FF;
+  --text:#111827;
+  --text2:#4B5563;
+  --text3:#9CA3AF;
+  --white:#FFFFFF;
+  --border:#E5E7EB;
+  --border2:rgba(26,77,179,0.14);
+  --green:#059669;
+  --green2:#10B981;
+  --green-pale:#D1FAE5;
+  --amber:#D97706;
+  --amber-pale:#FEF3C7;
+  --red:#DC2626;
+  --red-pale:#FEE2E2;
+  --ease:cubic-bezier(.4,0,.2,1);
+  --spring:cubic-bezier(.34,1.56,.64,1);
+  --bar-h:40px;
+  --nav-h:58px;
+  --step-h:50px;
+}
+html{scroll-behavior:smooth}
+body{font-family:'DM Sans',sans-serif;background:var(--bg);color:var(--text);font-size:15px;line-height:1.6;overflow-x:hidden}
+
+/* STATE BAR */
+.state-bar{background:var(--navy);padding:0 20px;height:var(--bar-h);display:flex;align-items:center;gap:6px;overflow-x:auto;position:fixed;top:0;left:0;right:0;z-index:300;scrollbar-width:none}
+.state-bar::-webkit-scrollbar{display:none}
+.state-lbl{font-size:10px;font-weight:600;letter-spacing:.13em;text-transform:uppercase;color:rgba(255,255,255,.28);white-space:nowrap;margin-right:6px;flex-shrink:0}
+.state-btn{font-family:'DM Sans',sans-serif;font-size:11px;font-weight:500;padding:4px 12px;border-radius:20px;border:1px solid rgba(255,255,255,.12);background:transparent;color:rgba(255,255,255,.5);cursor:pointer;transition:all .2s;white-space:nowrap;flex-shrink:0}
+.state-btn:hover{border-color:rgba(255,255,255,.3);color:rgba(255,255,255,.85)}
+.state-btn.active{background:var(--blue2);border-color:var(--blue2);color:#fff}
+
+/* NAV */
+nav{position:fixed;top:var(--bar-h);left:0;right:0;z-index:200;display:flex;align-items:center;justify-content:space-between;padding:0 40px;height:var(--nav-h);background:rgba(245,246,248,.97);backdrop-filter:blur(20px);-webkit-backdrop-filter:blur(20px);border-bottom:1px solid var(--border)}
+.nav-logo{font-family:'Cormorant Garamond',serif;font-size:20px;font-weight:400;letter-spacing:.16em;color:var(--navy);text-transform:uppercase;display:flex;align-items:center;gap:1px}
+.nav-links{display:flex;gap:30px;list-style:none}
+.nav-links a{font-size:13px;color:var(--text2);text-decoration:none;transition:color .2s}
+.nav-links a:hover{color:var(--text)}
+.nav-right{display:flex;align-items:center;gap:10px}
+.btn-ghost{font-family:'DM Sans',sans-serif;font-size:13px;font-weight:500;padding:8px 18px;border-radius:7px;border:1px solid var(--border);background:transparent;color:var(--text2);cursor:pointer;transition:all .2s}
+.btn-ghost:hover{border-color:var(--navy);color:var(--navy)}
+.btn-primary{font-family:'DM Sans',sans-serif;font-size:13px;font-weight:500;padding:8px 18px;border-radius:7px;border:none;background:var(--navy);color:#fff;cursor:pointer;transition:all .2s}
+.btn-primary:hover{background:var(--navy2);box-shadow:0 4px 14px rgba(19,23,32,.2)}
+
+/* STEP BAR */
+.step-bar{position:fixed;top:calc(var(--bar-h) + var(--nav-h));left:0;right:0;z-index:190;background:rgba(247,247,245,.98);backdrop-filter:blur(12px);border-bottom:1px solid var(--border);height:var(--step-h);display:flex;align-items:center;padding:0 44px;gap:0}
+.stp{display:flex;align-items:center;gap:8px;cursor:pointer;padding:0 4px;flex-shrink:0;height:var(--step-h);transition:opacity .2s}
+.stp:hover{opacity:.75}
+.stp-connector{display:block;width:24px;height:1px;background:var(--border);margin:0 6px;flex-shrink:0}
+.stp-num{width:22px;height:22px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:10.5px;font-weight:600;flex-shrink:0;transition:all .32s var(--spring)}
+.stp-num.done{background:var(--navy);color:#fff}
+.stp-num.active{background:var(--navy);color:#fff;box-shadow:0 0 0 4px rgba(15,23,41,.12),0 2px 8px rgba(15,23,41,.2)}
+.stp-num.pending{background:transparent;color:var(--text3);border:1.5px solid var(--border)}
+.stp-lbl{font-size:12px;white-space:nowrap}
+.stp-lbl.active{color:var(--navy);font-weight:700;letter-spacing:.01em}
+.stp-lbl.done{color:var(--text2)}
+.stp-lbl.pending{color:var(--text3)}
+.progress-line{height:2px;background:linear-gradient(90deg,var(--blue2),var(--blue3));position:fixed;top:calc(var(--bar-h) + var(--nav-h) + var(--step-h));left:0;transition:width .48s var(--ease);z-index:189}
+
+/* LAYOUT */
+.page{padding-top:calc(var(--bar-h) + var(--nav-h) + var(--step-h) + 2px);min-height:100vh}
+.layout{display:grid;grid-template-columns:1fr 320px;gap:24px;max-width:1100px;margin:0 auto;padding:36px 32px 110px;align-items:start}
+.col-left{min-width:0}
+.col-right{position:sticky;top:calc(var(--bar-h) + var(--nav-h) + var(--step-h) + 22px);display:flex;flex-direction:column;gap:14px}
+
+/* STEP PANELS */
+.step-panel{display:none}
+.step-panel.active{display:block;animation:panelIn .3s var(--ease)}
+@keyframes panelIn{from{opacity:0;transform:translateY(10px)}to{opacity:1;transform:translateY(0)}}
+
+/* PAGE HEADER */
+.pg-eyebrow{font-size:11px;font-weight:600;letter-spacing:.2em;text-transform:uppercase;color:var(--blue2);margin-bottom:10px;display:flex;align-items:center;gap:10px}
+.pg-eyebrow::before{content:'';display:block;width:18px;height:1.5px;background:var(--blue2)}
+.pg-title{font-family:'Cormorant Garamond',serif;font-size:36px;font-weight:300;line-height:1.1;color:var(--navy);margin-bottom:8px;letter-spacing:-.02em}
+.pg-title em{font-style:italic;color:var(--blue2)}
+.pg-desc{font-size:13.5px;font-weight:300;color:var(--text2);margin-bottom:26px;max-width:450px;line-height:1.7}
+
+/* SECTIONS */
+.section{margin-bottom:24px;opacity:0;transform:translateY(10px);transition:all .45s var(--ease)}
+.section.vis{opacity:1;transform:translateY(0)}
+.sec-eyebrow{font-size:10px;font-weight:600;letter-spacing:.18em;text-transform:uppercase;color:var(--blue2);margin-bottom:6px}
+.sec-title{font-family:'Cormorant Garamond',serif;font-size:26px;font-weight:300;color:var(--navy);margin-bottom:18px;line-height:1.2}
+.sec-title em{font-style:italic}
+
+/* CARDS */
+.card{background:var(--white);border:1px solid var(--border);border-radius:14px;padding:22px 24px;margin-bottom:12px;box-shadow:0 1px 3px rgba(0,0,0,.05),0 4px 12px rgba(0,0,0,.03)}
+
+/* CATEGORY GRID */
+.cat-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:8px}
+.cat-card{display:flex;flex-direction:column;align-items:center;gap:8px;padding:20px 10px;border:1.5px solid var(--border);border-radius:10px;cursor:pointer;background:var(--white);transition:all .2s var(--ease);position:relative;box-shadow:0 1px 3px rgba(0,0,0,.04)}
+.cat-card:hover{border-color:var(--blue2);background:var(--blue-xpale);transform:translateY(-2px);box-shadow:0 4px 12px rgba(0,0,0,.07)}
+.cat-card.sel{border-color:var(--navy);background:var(--blue-xpale);box-shadow:0 0 0 3px rgba(15,23,41,.08)}
+.cat-icon{font-size:24px;line-height:1}
+.cat-name{font-size:12px;color:var(--text2);text-align:center;transition:color .2s}
+.cat-card.sel .cat-name{color:var(--navy);font-weight:700}
+.cat-chk{position:absolute;top:7px;right:7px;width:16px;height:16px;border-radius:50%;background:var(--blue2);display:flex;align-items:center;justify-content:center;opacity:0;transform:scale(0);transition:all .2s var(--spring)}
+.cat-card.sel .cat-chk{opacity:1;transform:scale(1)}
+
+/* CONDITION */
+.cond-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:8px}
+.cond-card{padding:16px 18px;border:1.5px solid var(--border);border-radius:10px;cursor:pointer;background:var(--white);transition:all .2s;position:relative;box-shadow:0 1px 3px rgba(0,0,0,.04)}
+.cond-card:hover{border-color:var(--blue2);background:var(--blue-xpale)}
+.cond-card.sel{border-color:var(--blue2);background:var(--blue-pale);box-shadow:0 0 0 3px rgba(37,99,235,.07)}
+.cond-name{font-size:13.5px;font-weight:600;color:var(--navy);margin-bottom:2px}
+.cond-sub{font-size:11.5px;color:var(--text3);font-weight:300}
+.cond-card.sel .cond-name{color:var(--navy);font-weight:700}
+.cond-dot{position:absolute;top:14px;right:14px;width:14px;height:14px;border-radius:50%;border:1.5px solid var(--border);transition:all .2s var(--spring)}
+.cond-card.sel .cond-dot{background:var(--blue2);border-color:var(--blue2)}
+.cond-card.sel .cond-dot::after{content:'';display:block;width:5px;height:5px;border-radius:50%;background:#fff;margin:3.5px auto 0}
+
+/* FORMS */
+.fld{margin-bottom:20px}
+.fld-lbl{font-size:11.5px;font-weight:600;letter-spacing:.06em;text-transform:uppercase;color:var(--text2);margin-bottom:7px;display:block}
+.req{color:var(--red);margin-left:2px}
+.fld-in{width:100%;padding:10px 14px;border:1.5px solid var(--border);border-radius:8px;background:var(--white);font-family:'DM Sans',sans-serif;font-size:14px;color:var(--text);outline:none;transition:all .2s}
+.fld-in::placeholder{color:var(--text3);font-weight:300}
+.fld-in:focus{border-color:var(--blue2);box-shadow:0 0 0 3px rgba(37,99,235,.08)}
+.fld-in.error{border-color:var(--red)}
+textarea.fld-in{resize:vertical;min-height:96px;line-height:1.65}
+select.fld-in{cursor:pointer}
+.fld-hint{font-size:11.5px;color:var(--text3);margin-top:5px;font-weight:300;line-height:1.5}
+.fld-err{font-size:11.5px;color:var(--red);margin-top:5px}
+.char-count{font-size:11px;color:var(--text3);text-align:right;margin-top:4px}
+.row2{display:grid;grid-template-columns:1fr 1fr;gap:16px}
+.row3{display:grid;grid-template-columns:1fr 1fr 1fr;gap:14px}
+
+/* TAGS */
+.tags-wrap{min-height:44px;padding:7px 10px;border:1.5px solid var(--border);border-radius:8px;background:var(--white);display:flex;flex-wrap:wrap;gap:5px;align-items:center;cursor:text;transition:all .2s}
+.tags-wrap:focus-within{border-color:var(--blue2);box-shadow:0 0 0 3px rgba(37,99,235,.08)}
+.tag-chip{display:inline-flex;align-items:center;gap:5px;background:var(--blue-pale);border:1px solid var(--blue-light);color:var(--blue);font-size:12px;font-weight:500;padding:3px 9px;border-radius:5px;cursor:pointer;transition:all .15s;animation:chipIn .2s var(--spring)}
+.tag-chip:hover{background:var(--blue-light);border-color:var(--blue2)}
+@keyframes chipIn{from{opacity:0;transform:scale(.8)}to{opacity:1;transform:scale(1)}}
+.tag-input{border:none;outline:none;font-family:'DM Sans',sans-serif;font-size:13.5px;color:var(--text);background:transparent;flex:1;min-width:120px;padding:2px 0}
+.tag-input::placeholder{color:var(--text3);font-weight:300}
+
+/* PHOTO UPLOAD — improved */
+.upload-outer{border:2px dashed var(--border);border-radius:12px;background:var(--white);transition:all .25s var(--ease);overflow:hidden}
+.upload-outer.drag-over{border-color:var(--blue2);border-style:solid;background:var(--blue-xpale);box-shadow:0 0 0 4px rgba(37,99,235,.07)}
+.upload-outer.has-photos{border-style:solid;border-color:var(--border)}
+.upload-dropzone{padding:44px 32px;text-align:center;cursor:pointer;display:flex;flex-direction:column;align-items:center;gap:10px}
+.upload-dropzone:hover .upload-icon-wrap{transform:translateY(-3px)}
+.upload-icon-wrap{width:52px;height:52px;border-radius:12px;background:var(--bg2);display:flex;align-items:center;justify-content:center;transition:transform .3s var(--spring);margin-bottom:4px}
+.upload-icon-wrap svg{opacity:.5}
+.upload-title{font-size:14px;font-weight:500;color:var(--text);margin-bottom:2px}
+.upload-title span{color:var(--blue2)}
+.upload-sub{font-size:12.5px;color:var(--text3);font-weight:300}
+.thumb-section{padding:16px 16px 16px}
+.thumb-section-hdr{display:flex;align-items:center;justify-content:space-between;margin-bottom:12px}
+.thumb-section-lbl{font-size:11.5px;font-weight:600;color:var(--text2);letter-spacing:.04em}
+.thumb-add-btn{font-size:12px;font-weight:500;color:var(--blue2);background:none;border:none;cursor:pointer;font-family:'DM Sans',sans-serif;padding:4px 10px;border-radius:6px;transition:background .15s}
+.thumb-add-btn:hover{background:var(--blue-pale)}
+.thumb-grid{display:grid;grid-template-columns:repeat(5,1fr);gap:8px}
+.thumb{aspect-ratio:1;border:1.5px solid var(--border);border-radius:8px;background:var(--bg2);position:relative;overflow:hidden;cursor:pointer;transition:all .2s}
+.thumb:hover{border-color:var(--blue2)}
+.thumb:hover .thumb-ov{opacity:1}
+.thumb-ov{position:absolute;inset:0;background:rgba(19,23,32,.4);display:flex;align-items:flex-start;justify-content:flex-end;padding:6px;opacity:0;transition:opacity .2s}
+.thumb-rm{width:22px;height:22px;border-radius:50%;background:rgba(0,0,0,.5);border:none;cursor:pointer;display:flex;align-items:center;justify-content:center;flex-shrink:0;transition:background .15s}
+.thumb-rm:hover{background:var(--red)}
+.thumb-cover{position:absolute;bottom:5px;left:5px;background:var(--navy);color:#fff;font-size:9px;font-weight:700;letter-spacing:.05em;text-transform:uppercase;padding:2px 7px;border-radius:3px}
+.upload-hint-bar{padding:12px 16px;border-top:1px solid var(--border);background:var(--bg);display:flex;align-items:center;gap:8px;font-size:12px;color:var(--text3)}
+.upload-hint-bar svg{flex-shrink:0;opacity:.5}
+
+/* ATTR BUTTONS */
+.attr-opts{display:grid;gap:7px}
+.attr-btn{padding:11px 14px;border:1.5px solid var(--border);border-radius:8px;cursor:pointer;background:transparent;transition:all .2s;text-align:left;font-family:'DM Sans',sans-serif}
+.attr-btn:hover{border-color:var(--blue2);background:var(--blue-xpale)}
+.attr-btn.sel{border-color:var(--navy);background:var(--blue-xpale);box-shadow:0 0 0 2px rgba(15,23,41,.08)}
+.attr-top{font-size:13px;font-weight:500;color:var(--navy);margin-bottom:1px;display:block}
+.attr-btn.sel .attr-top{color:var(--navy);font-weight:700}
+.attr-sub{font-size:11px;color:var(--text3);display:block;font-weight:300}
+
+/* CERT */
+.cert-opts{display:flex;gap:7px;flex-wrap:wrap}
+.cert-btn{padding:9px 18px;border:1.5px solid var(--border);border-radius:8px;cursor:pointer;background:var(--white);font-family:'DM Sans',sans-serif;font-size:13px;color:var(--text2);transition:all .2s}
+.cert-btn:hover{border-color:var(--blue2)}
+.cert-btn.sel{border-color:var(--blue2);background:var(--blue-pale);color:var(--navy);font-weight:600}
+
+/* PARAMS CARD */
+.params-card{background:var(--white);border:1px solid var(--border);border-radius:12px;padding:28px;box-shadow:0 1px 4px rgba(0,0,0,.04)}
+.param-grp{margin-bottom:28px;padding-bottom:28px;border-bottom:1px solid var(--border)}
+.param-grp:last-child{margin-bottom:0;padding-bottom:0;border-bottom:none}
+.param-lbl{font-size:11.5px;font-weight:600;letter-spacing:.08em;text-transform:uppercase;color:var(--navy);margin-bottom:14px;display:flex;align-items:center;gap:7px}
+
+/* TOOLTIP */
+.tt{position:relative;display:inline-block}
+.tt-trig{width:15px;height:15px;border-radius:50%;border:1px solid var(--border);background:transparent;color:var(--text3);font-size:9px;cursor:pointer;display:inline-flex;align-items:center;justify-content:center}
+.tt-box{position:absolute;bottom:calc(100% + 7px);left:50%;transform:translateX(-50%) translateY(4px);background:var(--navy);color:#fff;font-size:11.5px;font-weight:300;padding:9px 13px;border-radius:7px;width:210px;pointer-events:none;opacity:0;transition:all .2s;z-index:40;line-height:1.55}
+.tt:hover .tt-box{opacity:1;transform:translateX(-50%) translateY(0)}
+
+/* RANGE */
+.range-val{font-family:'Cormorant Garamond',serif;font-size:32px;font-weight:300;color:var(--navy);text-align:center;margin-bottom:10px}
+.range-lbls{display:flex;justify-content:space-between;margin-bottom:8px;font-size:11px;color:var(--text3)}
+input[type=range]{-webkit-appearance:none;width:100%;height:2px;background:var(--border);border-radius:1px;outline:none;cursor:pointer}
+input[type=range]::-webkit-slider-thumb{-webkit-appearance:none;width:20px;height:20px;border-radius:50%;background:var(--navy);border:3px solid var(--bg);box-shadow:0 0 0 1px var(--navy);transition:transform .15s var(--spring);cursor:grab}
+input[type=range]::-webkit-slider-thumb:active{transform:scale(1.2);cursor:grabbing}
+.expert-tip{margin-top:16px;padding:13px 16px;background:var(--blue-xpale);border-left:3px solid var(--blue2);border-radius:0 7px 7px 0;font-size:12.5px;color:var(--text2);line-height:1.6;font-weight:300;opacity:0;transform:translateY(6px);transition:all .4s var(--ease) .15s}
+.expert-tip.show{opacity:1;transform:translateY(0)}
+
+/* ── PRICING SECTION ── */
+.mkt-range-val{font-family:'Cormorant Garamond',serif;font-size:36px;font-weight:300;color:var(--navy);letter-spacing:-.01em}
+.conf-badge{font-size:11px;font-weight:600;padding:4px 12px;border-radius:20px;display:inline-flex;align-items:center;gap:5px;letter-spacing:.03em}
+.conf-dot{width:6px;height:6px;border-radius:50%;flex-shrink:0}
+.conf-high{background:var(--green-pale);color:var(--green)}.conf-high .conf-dot{background:var(--green)}
+.conf-med{background:var(--amber-pale);color:var(--amber)}.conf-med .conf-dot{background:var(--amber)}
+.conf-low{background:var(--red-pale);color:var(--red)}.conf-low .conf-dot{background:var(--red)}
+
+.strategy-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:9px;margin-bottom:20px}
+.strategy-card{padding:18px 14px;border:1.5px solid var(--border);border-radius:10px;cursor:pointer;background:var(--white);text-align:center;transition:all .2s;position:relative}
+.strategy-card:hover{border-color:var(--blue2);transform:translateY(-1px);box-shadow:0 4px 12px rgba(0,0,0,.07)}
+.strategy-card.sel{border-color:var(--navy);background:var(--blue-xpale);transform:translateY(-2px);box-shadow:0 6px 20px rgba(15,23,41,.12)}
+.strat-price{font-family:'Cormorant Garamond',serif;font-size:26px;font-weight:300;color:var(--navy);margin-bottom:2px}
+.strategy-card.sel .strat-price{color:var(--navy)}
+.strat-lbl{font-size:11.5px;color:var(--text3);margin-bottom:8px}
+.strat-tag{display:inline-block;font-size:10px;padding:2px 8px;border-radius:4px;font-weight:600;letter-spacing:.03em}
+.tag-fast{background:var(--blue-light);color:var(--blue)}
+.tag-best{background:var(--green-pale);color:var(--green)}
+.tag-max{background:var(--amber-pale);color:var(--amber)}
+
+.price-wrap{position:relative}
+.price-pfx{position:absolute;left:16px;top:50%;transform:translateY(-50%);font-family:'Cormorant Garamond',serif;font-size:24px;font-weight:300;color:var(--text3)}
+.price-in{width:100%;padding:14px 14px 14px 34px;border:2px solid var(--navy);border-radius:8px;font-family:'Cormorant Garamond',serif;font-size:32px;font-weight:300;color:var(--navy);outline:none;transition:all .2s}
+.price-in:focus{border-color:var(--blue2);box-shadow:0 0 0 3px rgba(37,99,235,.08)}
+.price-fb{font-size:12.5px;margin-top:8px;display:flex;align-items:center;gap:5px}
+.fb-good{color:var(--green)}.fb-warn{color:var(--amber)}.fb-bad{color:var(--red)}
+
+/* STATE BANNERS */
+.banner{border-radius:8px;padding:14px 16px;margin-bottom:14px;display:flex;gap:12px;align-items:flex-start;font-size:13px;line-height:1.6}
+.banner strong{font-weight:600}
+.banner-above{background:#FFF5F5;border:1px solid #FECACA;color:#991B1B;border-left:3px solid var(--red)}
+.banner-refresh{background:var(--green-pale);border:1px solid #6EE7B7;color:#065F46;border-left:3px solid var(--green2)}
+.banner-incomplete{background:var(--amber-pale);border:1px solid #FCD34D;color:#92400E;border-left:3px solid var(--amber)}
+
+/* ANALYZING */
+@keyframes spin{to{transform:rotate(360deg)}}
+.analyzing-ov{position:absolute;inset:0;border-radius:12px;background:rgba(19,23,32,.87);backdrop-filter:blur(4px);-webkit-backdrop-filter:blur(4px);display:flex;flex-direction:column;align-items:center;justify-content:center;gap:12px;z-index:10}
+.spinner{width:34px;height:34px;border:2px solid rgba(255,255,255,.12);border-top-color:var(--blue3);border-radius:50%;animation:spin .8s linear infinite}
+.analyzing-txt{font-size:14px;color:rgba(255,255,255,.85);font-weight:400;letter-spacing:.01em}
+.analyzing-sub{font-size:12px;color:rgba(255,255,255,.4)}
+
+/* SKELETONS */
+@keyframes shimmer{0%{background-position:-600px 0}100%{background-position:600px 0}}
+.skel{background:linear-gradient(90deg,#EBEBEB 25%,#E2E2E2 50%,#EBEBEB 75%);background-size:1200px 100%;animation:shimmer 1.4s infinite;border-radius:6px}
+
+/* FAILURE */
+.failure-box{border:1px solid #FECACA;background:#FFFAFA;border-radius:12px;padding:40px;text-align:center;margin-bottom:14px}
+.failure-ico{font-size:30px;margin-bottom:14px;opacity:.7}
+.failure-ttl{font-family:'Cormorant Garamond',serif;font-size:26px;font-weight:300;color:var(--navy);margin-bottom:6px}
+.failure-sub{font-size:13.5px;color:var(--text2);font-weight:300;margin-bottom:24px;line-height:1.65}
+.btn-retry{font-family:'DM Sans',sans-serif;font-size:13px;font-weight:600;padding:10px 26px;background:var(--navy);color:#fff;border:none;border-radius:7px;cursor:pointer;margin-right:10px;transition:all .2s}
+.btn-retry:hover{background:var(--navy2);box-shadow:0 4px 12px rgba(19,23,32,.2)}
+.btn-manual{font-family:'DM Sans',sans-serif;font-size:13px;padding:10px 22px;background:transparent;border:1.5px solid var(--border);border-radius:7px;cursor:pointer;color:var(--text2);transition:all .2s}
+.btn-manual:hover{border-color:var(--navy);color:var(--navy)}
+
+/* ADDRESS */
+.addr-card{border:1px solid var(--border);border-radius:10px;padding:18px 22px;display:flex;align-items:center;justify-content:space-between;background:var(--white);box-shadow:0 1px 4px rgba(0,0,0,.04)}
+.addr-flag{font-size:22px;margin-right:12px}
+.addr-name{font-size:13.5px;font-weight:600;color:var(--navy);margin-bottom:2px}
+.addr-line{font-size:12.5px;color:var(--text3);font-weight:300}
+.addr-change{font-size:12px;color:var(--blue2);font-weight:600;cursor:pointer;background:none;border:none;font-family:'DM Sans',sans-serif;white-space:nowrap;margin-left:16px}
+
+/* REVIEW */
+.rev-imgs{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:16px}
+.rev-img{aspect-ratio:1;border:1px solid var(--border);border-radius:8px;background:var(--bg2);display:flex;align-items:center;justify-content:center;font-size:32px;overflow:hidden}
+.rev-row{display:flex;justify-content:space-between;align-items:baseline;padding:9px 0;border-bottom:1px solid rgba(0,0,0,.05);font-size:13px}
+.rev-row:last-child{border-bottom:none}
+.rev-k{color:var(--text3);font-weight:300}
+.rev-v{font-weight:600;color:var(--text);text-align:right}
+.rev-price{font-family:'Cormorant Garamond',serif;font-size:22px;font-weight:300;color:var(--navy)}
+.rev-payout{font-family:'Cormorant Garamond',serif;font-size:22px;font-weight:300;color:var(--green)}
+.rev-edit{font-size:11.5px;color:var(--blue2);cursor:pointer;background:none;border:none;font-family:'DM Sans',sans-serif;font-weight:500}
+.rev-hdr{display:flex;align-items:baseline;justify-content:space-between;margin-bottom:16px}
+.attr-summary{display:grid;grid-template-columns:repeat(3,1fr);gap:16px}
+.attr-blk-lbl{font-size:10px;font-weight:600;letter-spacing:.09em;text-transform:uppercase;color:var(--text3);margin-bottom:3px}
+.attr-blk-val{font-family:'Cormorant Garamond',serif;font-size:24px;font-weight:300;color:var(--navy)}
+.preview-card{border:1px solid var(--border);border-radius:12px;overflow:hidden;background:var(--white);margin-top:20px;box-shadow:0 1px 4px rgba(0,0,0,.04)}
+.preview-img-zone{height:160px;background:linear-gradient(145deg,#C4D0D8,#8FA0B4 40%,#607585);display:flex;align-items:center;justify-content:center;font-size:56px}
+.preview-body{padding:18px 22px}
+.preview-price{font-family:'Cormorant Garamond',serif;font-size:28px;font-weight:300;color:var(--navy);margin-bottom:4px}
+.preview-name{font-size:13.5px;color:var(--text2);margin-bottom:12px;font-weight:300}
+.preview-tags{display:flex;gap:5px;flex-wrap:wrap}
+.preview-tag{font-size:11px;background:var(--bg2);color:var(--text2);padding:3px 9px;border-radius:4px;font-weight:500}
+
+/* ── RIGHT PANEL — SCORE CARD (navy) ── */
+.score-card{background:var(--navy);border-radius:14px;padding:24px;color:#fff;box-shadow:0 8px 32px rgba(19,23,32,.22)}
+.score-ey{font-size:10px;font-weight:600;letter-spacing:.14em;text-transform:uppercase;color:rgba(255,255,255,.35);margin-bottom:18px;display:flex;align-items:center;gap:7px}
+.score-ey::before{content:'';display:block;width:14px;height:1.5px;background:var(--blue3)}
+.score-pct{font-family:'Cormorant Garamond',serif;font-size:52px;font-weight:300;line-height:1;color:#fff;letter-spacing:-.03em;margin-bottom:3px}
+.score-pct-lbl{font-size:10px;font-weight:600;letter-spacing:.12em;text-transform:uppercase;color:rgba(255,255,255,.3);margin-bottom:12px}
+.score-sub{font-size:12.5px;font-weight:300;color:rgba(255,255,255,.5);line-height:1.55;margin-bottom:14px}
+.score-bar-bg{background:rgba(255,255,255,.08);height:3px;border-radius:2px;overflow:hidden;margin-bottom:22px}
+.score-bar-fill{height:3px;background:linear-gradient(90deg,var(--blue3),#93C5FD);border-radius:2px;transition:width .65s var(--ease)}
+.score-div{border:none;border-top:1px solid rgba(255,255,255,.07);margin:16px 0}
+.score-kv{display:flex;justify-content:space-between;align-items:flex-end;margin-bottom:12px}
+.score-k{font-size:10px;font-weight:600;letter-spacing:.1em;text-transform:uppercase;color:rgba(255,255,255,.3)}
+.score-v{font-family:'Cormorant Garamond',serif;font-size:26px;font-weight:300;color:#6EE7B7}
+.score-v-sm{font-size:13.5px;font-weight:300;color:rgba(255,255,255,.5)}
+.score-checks{display:flex;flex-direction:column;gap:9px;margin-top:16px}
+.score-chk{display:flex;align-items:center;gap:9px;font-size:12.5px;font-weight:300}
+.score-chk.done{color:rgba(255,255,255,.8)}
+.score-chk.pend{color:rgba(255,255,255,.28)}
+.chk-ico{width:16px;height:16px;border-radius:50%;flex-shrink:0;display:flex;align-items:center;justify-content:center;font-size:9px}
+.chk-done{background:var(--blue2);color:#fff}
+.chk-pend{border:1.5px solid rgba(255,255,255,.15)}
+.score-ins{display:flex;align-items:center;gap:8px;background:rgba(255,255,255,.05);border-radius:8px;padding:11px 13px;margin-top:16px;font-size:12px;font-weight:300;color:rgba(255,255,255,.5)}
+
+/* PRICING PANEL (navy right card) */
+.pricing-right-card{background:var(--navy);border-radius:14px;padding:24px;color:#fff;box-shadow:0 8px 32px rgba(19,23,32,.22)}
+.prc-ey{font-size:10px;font-weight:600;letter-spacing:.14em;text-transform:uppercase;color:rgba(255,255,255,.35);margin-bottom:10px;display:flex;align-items:center;gap:7px}
+.prc-ey::before{content:'';display:block;width:14px;height:1.5px;background:var(--blue3)}
+.prc-range{font-family:'Cormorant Garamond',serif;font-size:28px;font-weight:300;color:#fff;letter-spacing:-.01em;margin-bottom:6px}
+.prc-conf-row{display:flex;align-items:center;gap:8px;margin-bottom:4px}
+.prc-conf-dot{width:6px;height:6px;border-radius:50%}
+.prc-conf-lbl{font-size:11px;font-weight:600;letter-spacing:.03em}
+.prc-desc{font-size:11.5px;font-weight:300;color:rgba(255,255,255,.4);line-height:1.5;margin-bottom:20px}
+.prc-div{border:none;border-top:1px solid rgba(255,255,255,.07);margin:16px 0}
+.prc-payout-k{font-size:10px;font-weight:600;letter-spacing:.12em;text-transform:uppercase;color:rgba(255,255,255,.3);margin-bottom:3px}
+.prc-payout-v{font-family:'Cormorant Garamond',serif;font-size:30px;font-weight:300;color:#6EE7B7}
+.prc-fee{font-size:12px;font-weight:300;color:rgba(255,255,255,.4);margin-top:4px}
+.prc-ins{display:flex;align-items:center;gap:8px;background:rgba(255,255,255,.05);border-radius:8px;padding:10px 12px;margin-top:14px;font-size:12px;font-weight:300;color:rgba(255,255,255,.5)}
+/* confidence colors on pricing panel */
+.prc-high .prc-conf-dot{background:#6EE7B7}.prc-high .prc-conf-lbl{color:#6EE7B7}
+.prc-med .prc-conf-dot{background:#FCD34D}.prc-med .prc-conf-lbl{color:#FCD34D}
+.prc-low .prc-conf-dot{background:#FCA5A5}.prc-low .prc-conf-lbl{color:#FCA5A5}
+
+/* CHATBOT */
+.chat-card{background:var(--white);border:1px solid var(--border);border-radius:14px;overflow:hidden;display:flex;flex-direction:column;height:420px;box-shadow:0 2px 8px rgba(0,0,0,.05)}
+.chat-header{background:var(--navy);padding:14px 18px;display:flex;align-items:center;gap:10px}
+.chat-avatar{width:32px;height:32px;background:rgba(37,99,235,.8);border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:14px;flex-shrink:0}
+.chat-hdr-name{font-size:13px;font-weight:600;color:#fff;letter-spacing:.01em}
+.chat-hdr-status{font-size:11px;color:rgba(255,255,255,.45);display:flex;align-items:center;gap:5px;margin-top:1px}
+.chat-status-dot{width:6px;height:6px;border-radius:50%;background:#22C55E}
+.chat-msgs{flex:1;overflow-y:auto;padding:14px;display:flex;flex-direction:column;gap:10px;scroll-behavior:smooth}
+.chat-msgs::-webkit-scrollbar{width:3px}
+.chat-msgs::-webkit-scrollbar-thumb{background:var(--border);border-radius:2px}
+.msg{max-width:88%;animation:msgIn .22s var(--ease)}
+@keyframes msgIn{from{opacity:0;transform:translateY(6px)}to{opacity:1;transform:translateY(0)}}
+.msg-bot{align-self:flex-start}
+.msg-user{align-self:flex-end}
+.msg-bubble{padding:9px 13px;border-radius:10px;font-size:13px;line-height:1.55;font-weight:300}
+.msg-bot .msg-bubble{background:var(--bg);border:1px solid var(--border);color:var(--text);border-radius:3px 10px 10px 10px}
+.msg-user .msg-bubble{background:var(--blue2);color:#fff;border-radius:10px 10px 3px 10px}
+.msg-time{font-size:10px;color:var(--text3);margin-top:3px;padding:0 3px}
+.msg-bot .msg-time{text-align:left}
+.msg-user .msg-time{text-align:right}
+.chat-qs{padding:9px 12px;border-top:1px solid var(--border);display:flex;gap:6px;flex-wrap:wrap;background:var(--bg)}
+.chat-q-btn{font-family:'DM Sans',sans-serif;font-size:11.5px;padding:5px 11px;border:1px solid var(--border2);border-radius:20px;background:var(--blue-xpale);color:var(--blue);cursor:pointer;transition:all .15s;white-space:nowrap;font-weight:500}
+.chat-q-btn:hover{background:var(--blue-pale);border-color:var(--blue2)}
+.chat-input-row{padding:10px 12px;border-top:1px solid var(--border);display:flex;gap:8px;align-items:center}
+.chat-in{flex:1;border:1.5px solid var(--border);border-radius:20px;padding:8px 14px;font-family:'DM Sans',sans-serif;font-size:13px;outline:none;background:var(--bg);transition:all .2s}
+.chat-in:focus{border-color:var(--blue2);background:var(--white)}
+.chat-send{width:34px;height:34px;border-radius:50%;background:var(--blue2);border:none;cursor:pointer;display:flex;align-items:center;justify-content:center;transition:all .2s;flex-shrink:0}
+.chat-send:hover{background:var(--blue);transform:scale(1.06)}
+.typing-bubble{display:flex;gap:4px;align-items:center;padding:10px 14px}
+.typing-dot{width:7px;height:7px;border-radius:50%;background:var(--text3);animation:typingBounce 1.2s infinite}
+.typing-dot:nth-child(2){animation-delay:.2s}.typing-dot:nth-child(3){animation-delay:.4s}
+@keyframes typingBounce{0%,60%,100%{transform:translateY(0)}30%{transform:translateY(-6px)}}
+
+/* FOOTER */
+.footer{position:fixed;bottom:0;left:0;right:0;background:rgba(245,246,248,.98);backdrop-filter:blur(16px);-webkit-backdrop-filter:blur(16px);border-top:1px solid var(--border);padding:12px 40px;display:flex;align-items:center;justify-content:space-between;z-index:180}
+.footer-l{display:flex;align-items:center;gap:16px}
+.btn-prev-step{font-family:'DM Sans',sans-serif;font-size:13px;font-weight:500;padding:10px 22px;border:1.5px solid var(--border);border-radius:8px;background:transparent;color:var(--text2);cursor:pointer;transition:all .2s}
+.btn-prev-step:hover{border-color:var(--navy);color:var(--navy)}
+.autosave{font-size:11.5px;color:var(--text3);display:flex;align-items:center;gap:5px}
+.btn-continue{font-family:'DM Sans',sans-serif;font-size:13px;font-weight:600;letter-spacing:.06em;text-transform:uppercase;padding:12px 44px;background:var(--navy);color:#fff;border:none;border-radius:9px;cursor:pointer;transition:all .25s var(--ease);display:flex;align-items:center;gap:8px}
+.btn-continue:hover{transform:translateY(-2px);box-shadow:0 8px 24px rgba(19,23,32,.22);background:var(--navy2)}
+.btn-continue.publish{background:var(--blue2)}
+.btn-continue.publish:hover{background:var(--blue);box-shadow:0 8px 24px rgba(37,99,235,.28)}
+
+/* SUMMARY PILL */
+.sum-pill{position:fixed;bottom:80px;right:28px;background:var(--navy);color:#fff;padding:10px 18px;border-radius:28px;font-size:12.5px;display:flex;align-items:center;gap:9px;box-shadow:0 6px 28px rgba(19,23,32,.22);transform:translateY(70px);transition:transform .4s var(--spring);z-index:170;cursor:pointer}
+.sum-pill.vis{transform:translateY(0)}
+.pill-dot{width:7px;height:7px;border-radius:50%;background:var(--blue3);flex-shrink:0;animation:pillPulse 2s infinite}
+@keyframes pillPulse{0%,100%{opacity:1}50%{opacity:.5}}
+
+@keyframes fabIn{from{opacity:0;transform:scale(.6) translateY(20px)}to{opacity:1;transform:scale(1) translateY(0)}}
+@keyframes chatPanelIn{from{opacity:0;transform:translateY(12px)}to{opacity:1;transform:translateY(0)}}
+</style>
+</head>
+<body>
+
+<!-- STATE SWITCHER BAR -->
+<div class="state-bar">
+  <span class="state-lbl">Pricing State:</span>
+  <button class="state-btn active" id="sb-high"    onclick="activateState(this,'high')">High Confidence</button>
+  <button class="state-btn"        id="sb-med"     onclick="activateState(this,'med')">Med Confidence</button>
+  <button class="state-btn"        id="sb-low"     onclick="activateState(this,'low')">Low Confidence</button>
+  <button class="state-btn"        id="sb-above"   onclick="activateState(this,'above')">Above Market</button>
+  <button class="state-btn"        id="sb-analyze" onclick="activateState(this,'analyzing')">Analyzing…</button>
+  <button class="state-btn"        id="sb-refresh" onclick="activateState(this,'refreshed')">Est. Refreshed</button>
+  <button class="state-btn"        id="sb-incomp"  onclick="activateState(this,'incomplete')">Incomplete Attrs</button>
+  <button class="state-btn"        id="sb-fail"    onclick="activateState(this,'failure')">Failure</button>
+</div>
+
+<!-- NAV -->
+<nav>
+  <span class="nav-logo">GemGem</span>
+  <ul class="nav-links">
+    <li><a href="#">Jewelry</a></li>
+    <li><a href="#">Diamonds</a></li>
+    <li><a href="#">Sell</a></li>
+    <li><a href="#">How it works</a></li>
+  </ul>
+  <div class="nav-right">
+    <button class="btn-ghost">Save draft</button>
+    <button class="btn-primary">My listings</button>
+  </div>
+</nav>
+
+<!-- STEP BAR -->
+<div class="step-bar" id="stepBar"></div>
+<div class="progress-line" id="progressLine" style="width:0%"></div>
+
+<!-- PAGE -->
+<div class="page">
+<div class="layout">
+<div class="col-left">
+
+  <!-- STEP 1 -->
+  <div class="step-panel active" id="panel-1">
+    <div class="pg-eyebrow">01 — Product Category</div>
+    <h1 class="pg-title">What are you <em>listing?</em></h1>
+    <p class="pg-desc">Choose the type of jewelry and its condition. This shapes your entire listing experience.</p>
+    <div class="section vis">
+      <div class="sec-eyebrow">Category</div>
+      <h3 class="sec-title">Select jewelry type</h3>
+      <div class="cat-grid" id="catGrid"></div>
+    </div>
+    <div class="section" id="s1cond">
+      <div class="sec-eyebrow">Condition</div>
+      <h3 class="sec-title">What is the <em>condition?</em></h3>
+      <div class="cond-grid" id="condGrid"></div>
+    </div>
+  </div>
+
+  <!-- STEP 2 -->
+  <div class="step-panel" id="panel-2">
+    <div class="pg-eyebrow">02 — Title & Description</div>
+    <h1 class="pg-title">Tell buyers your <em>story.</em></h1>
+    <p class="pg-desc">A compelling title and rich description dramatically improve visibility and buyer confidence.</p>
+    <div class="section vis">
+      <div class="sec-eyebrow">Listing Copy</div>
+      <h3 class="sec-title">Title & <em>description</em></h3>
+      <div class="card">
+        <div class="fld">
+          <label class="fld-lbl">Listing Title <span class="req">*</span></label>
+          <input class="fld-in" id="titleIn" placeholder="e.g. 1.52ct Round Brilliant Loose Diamond, GIA Certified, D–IF" maxlength="80" oninput="document.getElementById('titleLen').textContent=this.value.length">
+          <div style="display:flex;justify-content:space-between;margin-top:4px">
+            <span class="fld-hint">Be specific — include carat, shape, and certification</span>
+            <span class="char-count"><span id="titleLen">0</span>/80</span>
+          </div>
+        </div>
+        <div class="fld">
+          <label class="fld-lbl">Description <span class="req">*</span></label>
+          <textarea class="fld-in" id="descIn" placeholder="Describe the diamond's qualities, history, and what makes it special. Buyers who read detailed descriptions convert 3× more." maxlength="1200" oninput="document.getElementById('descLen').textContent=this.value.length" style="min-height:110px"></textarea>
+          <div style="display:flex;justify-content:space-between;margin-top:4px">
+            <span class="fld-hint">Minimum 80 characters recommended</span>
+            <span class="char-count"><span id="descLen">0</span>/1200</span>
+          </div>
+        </div>
+        <div class="fld" style="margin-bottom:0">
+          <label class="fld-lbl">Tags</label>
+          <div class="tags-wrap" id="tagsWrap" onclick="document.getElementById('tagIn').focus()">
+            <div id="tagsChips" style="display:contents"></div>
+            <input class="tag-input" id="tagIn" placeholder="Type tag and press Enter…">
+          </div>
+          <span class="fld-hint">Press Enter or comma · Click any tag to remove · Helps buyers find your listing</span>
+        </div>
+      </div>
+    </div>
+    <div class="section" id="s2photos">
+      <div class="sec-eyebrow">Photography</div>
+      <h3 class="sec-title">Show it in its best <em>light</em></h3>
+      <input type="file" id="fileIn" accept="image/*" multiple style="display:none" onchange="onFileSelect(this)">
+      <div class="upload-outer" id="uploadOuter">
+        <div class="upload-dropzone" id="uploadZone" onclick="document.getElementById('fileIn').click()">
+          <div class="upload-icon-wrap">
+            <svg width="22" height="22" viewBox="0 0 22 22" fill="none"><path d="M11 14V4M7 8l4-4 4 4" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/><path d="M3 15v2a2 2 0 002 2h12a2 2 0 002-2v-2" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/></svg>
+          </div>
+          <div class="upload-title"><span>Click to upload</span> or drag & drop</div>
+          <div class="upload-sub">JPEG, PNG · up to 10 MB · max 10 photos</div>
+        </div>
+        <div class="thumb-section" id="thumbSection" style="display:none">
+          <div class="thumb-section-hdr">
+            <span class="thumb-section-lbl" id="thumbCount">0 photos</span>
+            <button class="thumb-add-btn" onclick="document.getElementById('fileIn').click()">+ Add more</button>
+          </div>
+          <div class="thumb-grid" id="thumbGrid"></div>
+        </div>
+        <div class="upload-hint-bar">
+          <svg width="14" height="14" viewBox="0 0 14 14" fill="none"><circle cx="7" cy="7" r="6" stroke="currentColor" stroke-width="1.3"/><path d="M7 6v4M7 4.5v.5" stroke="currentColor" stroke-width="1.3" stroke-linecap="round"/></svg>
+          Listings with 6+ photos sell 2.4× faster · First photo becomes your cover image
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- STEP 3 -->
+  <div class="step-panel" id="panel-3">
+    <div class="pg-eyebrow">03 — Product Details</div>
+    <h1 class="pg-title">The <em>attributes</em> that matter.</h1>
+    <p class="pg-desc">Precise grading details significantly improve your listing score and pricing accuracy.</p>
+    <div class="section vis">
+      <div class="sec-eyebrow">Core Grading</div>
+      <h3 class="sec-title">4Cs & <em>Shape</em></h3>
+      <div class="params-card">
+        <div class="param-grp">
+          <div class="param-lbl">Shape <div class="tt"><button class="tt-trig">?</button><span class="tt-box">Round Brilliant is the most sought-after shape — typically commands a 10–20% premium over fancy shapes of equivalent grade.</span></div></div>
+          <div class="attr-opts" style="grid-template-columns:repeat(4,1fr)" id="shapeOpts">
+            <button class="attr-btn sel" onclick="selAttr(this)"><span class="attr-top">Round</span><span class="attr-sub">Brilliant</span></button>
+            <button class="attr-btn" onclick="selAttr(this)"><span class="attr-top">Princess</span><span class="attr-sub">Square</span></button>
+            <button class="attr-btn" onclick="selAttr(this)"><span class="attr-top">Oval</span><span class="attr-sub">Elongated</span></button>
+            <button class="attr-btn" onclick="selAttr(this)"><span class="attr-top">Cushion</span><span class="attr-sub">Soft square</span></button>
+            <button class="attr-btn" onclick="selAttr(this)"><span class="attr-top">Emerald</span><span class="attr-sub">Step cut</span></button>
+            <button class="attr-btn" onclick="selAttr(this)"><span class="attr-top">Pear</span><span class="attr-sub">Teardrop</span></button>
+            <button class="attr-btn" onclick="selAttr(this)"><span class="attr-top">Radiant</span><span class="attr-sub">Trimmed</span></button>
+            <button class="attr-btn" onclick="selAttr(this)"><span class="attr-top">Marquise</span><span class="attr-sub">Elliptical</span></button>
+          </div>
+        </div>
+        <div class="param-grp">
+          <div class="param-lbl">Cut Grade <div class="tt"><button class="tt-trig">?</button><span class="tt-box">Cut is the most important of the 4Cs — it determines how brilliantly light reflects. Ideal cut commands the highest price.</span></div></div>
+          <div class="attr-opts" style="grid-template-columns:repeat(3,1fr)" id="cutOpts">
+            <button class="attr-btn sel" onclick="selAttr(this)"><span class="attr-top">Ideal</span><span class="attr-sub">Top 3% of all diamonds</span></button>
+            <button class="attr-btn" onclick="selAttr(this)"><span class="attr-top">Excellent</span><span class="attr-sub">Indistinguishable to eye</span></button>
+            <button class="attr-btn" onclick="selAttr(this)"><span class="attr-top">Very Good</span><span class="attr-sub">Excellent value</span></button>
+            <button class="attr-btn" onclick="selAttr(this)"><span class="attr-top">Good</span><span class="attr-sub">Best when size is priority</span></button>
+            <button class="attr-btn" onclick="selAttr(this)"><span class="attr-top">Fair</span><span class="attr-sub">Noticeably affects sparkle</span></button>
+          </div>
+        </div>
+        <div class="param-grp">
+          <div class="param-lbl">Color</div>
+          <div class="attr-opts" style="grid-template-columns:repeat(5,1fr)" id="colorOpts">
+            <button class="attr-btn sel" onclick="selAttr(this)"><span class="attr-top">D</span><span class="attr-sub">Colorless</span></button>
+            <button class="attr-btn" onclick="selAttr(this)"><span class="attr-top">E – F</span><span class="attr-sub">Colorless</span></button>
+            <button class="attr-btn" onclick="selAttr(this)"><span class="attr-top">G – H</span><span class="attr-sub">Near colorless</span></button>
+            <button class="attr-btn" onclick="selAttr(this)"><span class="attr-top">I – J</span><span class="attr-sub">Faint warmth</span></button>
+            <button class="attr-btn" onclick="selAttr(this)"><span class="attr-top">K+</span><span class="attr-sub">Visible color</span></button>
+          </div>
+        </div>
+        <div class="param-grp">
+          <div class="param-lbl">Clarity</div>
+          <div class="attr-opts" style="grid-template-columns:repeat(3,1fr)" id="clarityOpts">
+            <button class="attr-btn" onclick="selAttr(this)"><span class="attr-top">FL / IF</span><span class="attr-sub">Flawless</span></button>
+            <button class="attr-btn sel" onclick="selAttr(this)"><span class="attr-top">VVS1–VVS2</span><span class="attr-sub">Very very slightly included</span></button>
+            <button class="attr-btn" onclick="selAttr(this)"><span class="attr-top">VS1–VS2</span><span class="attr-sub">Very slightly included</span></button>
+            <button class="attr-btn" onclick="selAttr(this)"><span class="attr-top">SI1–SI2</span><span class="attr-sub">Eye clean value</span></button>
+            <button class="attr-btn" onclick="selAttr(this)"><span class="attr-top">I1–I3</span><span class="attr-sub">Visible inclusions</span></button>
+          </div>
+        </div>
+        <div class="param-grp">
+          <div class="param-lbl">Carat Weight</div>
+          <div class="range-val" id="caratVal">1.5 ct</div>
+          <div class="range-lbls"><span>0.25 ct</span><span>5 ct</span></div>
+          <input type="range" min="1" max="50" value="15" step="1" id="caratSlider" oninput="updateCarat(this.value)">
+          <div class="expert-tip" id="expertTip"><strong>Market insight:</strong> 1.5–2.0ct D-IF round brilliants are currently trading at $8,500–$12,000/ct. A complete GIA certificate increases buyer confidence and listing conversion by up to 40%.</div>
+        </div>
+      </div>
+    </div>
+    <div class="section" id="s3stone">
+      <div class="sec-eyebrow">Stone Details</div>
+      <h3 class="sec-title">Technical <em>specs</em></h3>
+      <div class="card">
+        <div class="row3" style="margin-bottom:16px">
+          <div class="fld" style="margin:0"><label class="fld-lbl">Table %</label><input class="fld-in" placeholder="57.0"></div>
+          <div class="fld" style="margin:0"><label class="fld-lbl">Depth %</label><input class="fld-in" placeholder="61.5"></div>
+          <div class="fld" style="margin:0"><label class="fld-lbl">Polish</label><select class="fld-in"><option>Excellent</option><option>Very Good</option><option>Good</option></select></div>
+        </div>
+        <div class="row2">
+          <div class="fld" style="margin:0"><label class="fld-lbl">Symmetry</label><select class="fld-in"><option>Excellent</option><option>Very Good</option><option>Good</option></select></div>
+          <div class="fld" style="margin:0"><label class="fld-lbl">Fluorescence</label><select class="fld-in"><option>None</option><option>Faint</option><option>Medium</option><option>Strong</option></select></div>
+        </div>
+      </div>
+    </div>
+    <div class="section" id="s3cert">
+      <div class="sec-eyebrow">Certification</div>
+      <h3 class="sec-title">Certificate & <em>provenance</em></h3>
+      <div class="card">
+        <div class="fld">
+          <label class="fld-lbl">Certificate Lab</label>
+          <div class="cert-opts">
+            <button class="cert-btn sel" onclick="selCert(this)">GIA</button>
+            <button class="cert-btn" onclick="selCert(this)">IGI</button>
+            <button class="cert-btn" onclick="selCert(this)">AGS</button>
+            <button class="cert-btn" onclick="selCert(this)">HRD</button>
+            <button class="cert-btn" onclick="selCert(this)">EGL</button>
+            <button class="cert-btn" onclick="selCert(this)">None</button>
+          </div>
+        </div>
+        <div class="fld" style="margin-bottom:0">
+          <label class="fld-lbl">Certificate Number</label>
+          <input class="fld-in" placeholder="e.g. 2418932150">
+          <span class="fld-hint">A valid cert number increases buyer conversion by up to 40%</span>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- STEP 4 -->
+  <div class="step-panel" id="panel-4">
+    <div class="pg-eyebrow">04 — Pricing & Address</div>
+    <h1 class="pg-title">Set your <em>price.</em></h1>
+    <p class="pg-desc">We've analysed thousands of comparable sales to give you a competitive market range.</p>
+    <div class="section vis">
+      <div class="sec-eyebrow">Market Intelligence</div>
+      <h3 class="sec-title">Your pricing <em>estimate</em></h3>
+      <div id="pricingUI"></div>
+    </div>
+    <div class="section" id="s4addr">
+      <div class="sec-eyebrow">Pickup & Shipping</div>
+      <h3 class="sec-title">Collection <em>address</em></h3>
+      <div class="addr-card">
+        <div style="display:flex;align-items:center">
+          <span class="addr-flag">🇮🇳</span>
+          <div><div class="addr-name">Seller — Surat, Gujarat</div><div class="addr-line">123 Diamond Bazaar, Ring Road, Surat 395002, India</div></div>
+        </div>
+        <button class="addr-change">Change →</button>
+      </div>
+      <div style="margin-top:10px"><span class="fld-hint">GemGem provides insured door-to-door collection. Our partner will contact you within 24h of a sale.</span></div>
+    </div>
+  </div>
+
+  <!-- STEP 5 -->
+  <div class="step-panel" id="panel-5">
+    <div class="pg-eyebrow">05 — Final Review</div>
+    <h1 class="pg-title">Ready to go <em>live?</em></h1>
+    <p class="pg-desc">Review every detail before your listing reaches thousands of qualified buyers.</p>
+    <div class="section vis">
+      <div class="card">
+        <div class="rev-hdr"><div><div class="sec-eyebrow" style="margin-bottom:3px">Photography</div><div style="font-family:'Cormorant Garamond',serif;font-size:20px;font-weight:300;color:var(--navy)">Your photos</div></div><button class="rev-edit" onclick="goStep(2)">Edit →</button></div>
+        <div class="rev-imgs" id="revImgs"><div class="rev-img">💎</div><div class="rev-img">✦</div></div>
+      </div>
+    </div>
+    <div class="section" id="s5det">
+      <div class="card">
+        <div class="rev-hdr"><div><div class="sec-eyebrow" style="margin-bottom:3px">Listing Details</div><div style="font-family:'Cormorant Garamond',serif;font-size:20px;font-weight:300;color:var(--navy)">Title & description</div></div><button class="rev-edit" onclick="goStep(2)">Edit →</button></div>
+        <div class="rev-row"><span class="rev-k">Title</span><span class="rev-v" style="font-size:12.5px;max-width:280px;text-align:right" id="revTitle">1.52ct Round Brilliant Loose Diamond, GIA Certified, D–IF</span></div>
+        <div class="rev-row"><span class="rev-k">Category</span><span class="rev-v" id="revCat">Loose Diamond</span></div>
+        <div class="rev-row"><span class="rev-k">Condition</span><span class="rev-v" id="revCond">New — Never worn</span></div>
+      </div>
+    </div>
+    <div class="section" id="s5attr">
+      <div class="card">
+        <div class="rev-hdr"><div><div class="sec-eyebrow" style="margin-bottom:3px">Stone Attributes</div><div style="font-family:'Cormorant Garamond',serif;font-size:20px;font-weight:300;color:var(--navy)">Grading details</div></div><button class="rev-edit" onclick="goStep(3)">Edit →</button></div>
+        <div class="attr-summary">
+          <div><div class="attr-blk-lbl">Carat</div><div class="attr-blk-val" id="revCarat">1.5</div></div>
+          <div><div class="attr-blk-lbl">Shape</div><div class="attr-blk-val" id="revShape">Round</div></div>
+          <div><div class="attr-blk-lbl">Cut</div><div class="attr-blk-val" id="revCut">Ideal</div></div>
+          <div><div class="attr-blk-lbl">Color</div><div class="attr-blk-val" id="revColor">D</div></div>
+          <div><div class="attr-blk-lbl">Clarity</div><div class="attr-blk-val" id="revClarity">VVS1</div></div>
+          <div><div class="attr-blk-lbl">Certificate</div><div class="attr-blk-val" id="revCert">GIA</div></div>
+        </div>
+      </div>
+    </div>
+    <div class="section" id="s5price">
+      <div class="card">
+        <div class="rev-hdr"><div><div class="sec-eyebrow" style="margin-bottom:3px">Pricing</div><div style="font-family:'Cormorant Garamond',serif;font-size:20px;font-weight:300;color:var(--navy)">Payout breakdown</div></div><button class="rev-edit" onclick="goStep(4)">Edit →</button></div>
+        <div class="rev-row"><span class="rev-k">Listing price</span><span class="rev-price" id="revPrice">$4,500</span></div>
+        <div class="rev-row"><span class="rev-k">GemGem fee (8%)</span><span class="rev-v" style="color:var(--text3)" id="revFee">− $360</span></div>
+        <div class="rev-row"><span class="rev-k">Shipping & insurance</span><span class="rev-v" style="color:var(--green)">Covered</span></div>
+        <div class="rev-row" style="border-bottom:none;padding-top:10px"><span class="rev-k" style="font-weight:600;color:var(--navy)">Your estimated payout</span><span class="rev-payout" id="revPayout">$4,140</span></div>
+      </div>
+    </div>
+    <div class="section" id="s5preview">
+      <div class="sec-eyebrow">Preview</div>
+      <h3 class="sec-title">How buyers will <em>see it</em></h3>
+      <div class="preview-card">
+        <div class="preview-img-zone" id="prevImgZone">💎</div>
+        <div class="preview-body">
+          <div class="preview-price" id="prevPrice">$4,500</div>
+          <div class="preview-name" id="prevName">1.52ct Round Brilliant Loose Diamond, GIA Certified, D–IF</div>
+          <div class="preview-tags" id="prevTags">
+            <span class="preview-tag">Round</span><span class="preview-tag">1.52ct</span><span class="preview-tag">D Color</span><span class="preview-tag">VVS1</span><span class="preview-tag">GIA</span><span class="preview-tag">Ideal Cut</span>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+</div><!-- /col-left -->
+
+<!-- RIGHT COLUMN -->
+<div class="col-right">
+
+  <!-- SCORE CARD -->
+  <div class="score-card" id="scoreCard">
+    <div class="score-ey">Listing Score</div>
+    <div class="score-pct" id="scorePct">40%</div>
+    <div class="score-pct-lbl">Visibility</div>
+    <div class="score-sub" id="scoreSub">Select a category and condition to start building your listing.</div>
+    <div class="score-bar-bg"><div class="score-bar-fill" id="scoreBar" style="width:40%"></div></div>
+    <hr class="score-div">
+    <div class="score-kv">
+      <div><div class="score-k">Est. Payout</div><div class="score-v" id="payoutVal">—</div></div>
+      <div style="text-align:right"><div class="score-k">Currency</div><div class="score-v-sm">USD</div></div>
+    </div>
+    <div class="score-kv" style="margin-bottom:0"><div class="score-k">GemGem Fee (8%)</div><div class="score-v-sm" id="feeVal">—</div></div>
+    <hr class="score-div">
+    <div class="score-checks" id="scoreChecks"></div>
+    <div class="score-ins">🛡 GemGem Global Insurance included</div>
+  </div>
+
+  <!-- PRICING RIGHT PANEL (shown on step 4) -->
+  <div class="pricing-right-card" id="pricingRightCard" style="display:none">
+    <div class="prc-ey">Market Estimate</div>
+    <div class="prc-range" id="prcRange">$4,000 — $4,800</div>
+    <div class="prc-conf-row" id="prcConfRow">
+      <div class="prc-conf-dot"></div>
+      <span class="prc-conf-lbl">High Confidence</span>
+    </div>
+    <div class="prc-desc" id="prcDesc">Based on 847 comparable sales · last 90 days</div>
+    <hr class="prc-div">
+    <div class="prc-payout-k">Your Est. Payout</div>
+    <div class="prc-payout-v" id="prcPayout">$4,140</div>
+    <div class="prc-fee" id="prcFee">After 8% GemGem fee · − $360</div>
+    <hr class="prc-div">
+    <div style="font-size:10px;font-weight:600;letter-spacing:.12em;text-transform:uppercase;color:rgba(255,255,255,.28);margin-bottom:8px">Market intelligence</div>
+    <div style="font-size:12px;font-weight:300;color:rgba(255,255,255,.45);line-height:1.65" id="prcVelocity">Stones at this price typically sell in <strong style="color:rgba(255,255,255,.7)">12–18 days</strong>.</div>
+    <div class="prc-div"></div>
+    <div class="prc-ins">🛡 Shipping & insurance covered</div>
+  </div>
+
+  <!-- Chat moved to floating widget -->
+
+</div>
+</div>
+</div><!-- /page -->
+
+<!-- FOOTER -->
+<div class="footer">
+  <div class="footer-l">
+    <button class="btn-prev-step" id="btnPrev" onclick="prevStep()">← Previous</button>
+    <span class="autosave">
+      <svg width="11" height="11" viewBox="0 0 11 11"><circle cx="5.5" cy="5.5" r="4.5" fill="none" stroke="currentColor" stroke-width="1"/><path d="M3.5 5.5l1.5 1.5L7.5 4" stroke="currentColor" stroke-width="1" fill="none" stroke-linecap="round"/></svg>
+      Draft auto-saved
+    </span>
+  </div>
+  <button class="btn-continue" id="btnNext" onclick="nextStep()">Continue <span style="opacity:.4;font-size:11px;margin-left:2px">→</span></button>
+</div>
+
+<!-- SUMMARY PILL -->
+<div class="sum-pill" id="sumPill" onclick="window.scrollTo({top:0,behavior:'smooth'})">
+  <span class="pill-dot"></span>
+  <span id="sumText">Loose Diamond · New · Round · Ideal</span>
+</div>
+
+<!-- FLOATING CHAT -->
+<div id="chatFab" style="
+  position:fixed;bottom:88px;right:28px;z-index:300;
+  display:none;
+  animation:fabIn .45s var(--spring);
+" onclick="toggleChat()">
+  <div style="
+    width:52px;height:52px;border-radius:50%;
+    background:var(--navy);box-shadow:0 4px 20px rgba(19,23,32,.32);
+    display:flex;align-items:center;justify-content:center;
+    cursor:pointer;transition:transform .2s var(--spring);position:relative;
+  " onmouseover="this.style.transform='scale(1.08)'" onmouseout="this.style.transform='scale(1)'">
+    <svg width="22" height="22" viewBox="0 0 22 22" fill="none"><path d="M19 3H3a1 1 0 00-1 1v12a1 1 0 001 1h4l4 4 4-4h4a1 1 0 001-1V4a1 1 0 00-1-1z" stroke="white" stroke-width="1.6" stroke-linejoin="round"/></svg>
+    <div id="chatUnread" style="
+      position:absolute;top:1px;right:1px;
+      width:14px;height:14px;border-radius:50%;
+      background:#22C55E;border:2px solid var(--bg);
+      font-size:8px;color:#fff;font-weight:700;
+      display:flex;align-items:center;justify-content:center;
+    ">1</div>
+  </div>
+</div>
+
+<div id="chatPanel" style="
+  position:fixed;bottom:152px;right:28px;z-index:299;
+  width:340px;border-radius:16px;overflow:hidden;
+  background:var(--white);border:1px solid var(--border);
+  box-shadow:0 12px 48px rgba(19,23,32,.16);
+  display:none;
+  flex-direction:column;height:430px;
+  animation:chatPanelIn .3s var(--ease);
+">
+  <div style="background:var(--navy);padding:14px 18px;display:flex;align-items:center;justify-content:space-between">
+    <div style="display:flex;align-items:center;gap:10px">
+      <div style="width:32px;height:32px;background:rgba(37,99,235,.8);border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:14px">💬</div>
+      <div>
+        <div style="font-size:13px;font-weight:600;color:#fff">GemGem Advisor</div>
+        <div style="font-size:11px;color:rgba(255,255,255,.45);display:flex;align-items:center;gap:5px;margin-top:1px">
+          <span style="width:6px;height:6px;border-radius:50%;background:#22C55E;display:inline-block"></span>Online · Diamond expert
+        </div>
+      </div>
+    </div>
+    <button onclick="toggleChat()" style="background:none;border:none;cursor:pointer;color:rgba(255,255,255,.4);font-size:18px;line-height:1;padding:2px 6px;transition:color .15s" onmouseover="this.style.color='#fff'" onmouseout="this.style.color='rgba(255,255,255,.4)'">×</button>
+  </div>
+  <div class="chat-msgs" id="chatMsgs" style="flex:1;overflow-y:auto;padding:14px;display:flex;flex-direction:column;gap:10px;scroll-behavior:smooth"></div>
+  <div class="chat-qs" id="chatQs">
+    <button class="chat-q-btn" onclick="askQ(this)">What's my diamond worth?</button>
+    <button class="chat-q-btn" onclick="askQ(this)">How is fee calculated?</button>
+    <button class="chat-q-btn" onclick="askQ(this)">Best price for fast sale?</button>
+  </div>
+  <div class="chat-input-row">
+    <input class="chat-in" id="chatIn" placeholder="Ask anything about your listing…" onkeydown="if(event.key==='Enter')sendChat()">
+    <button class="chat-send" onclick="sendChat()">
+      <svg width="14" height="14" viewBox="0 0 14 14" fill="none"><path d="M1 7h12M7 1l6 6-6 6" stroke="white" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg>
+    </button>
+  </div>
+</div>
+
+
+
+<script>
+const STEPS = ['Product Category','Title & Description','Product Details','Pricing & Address','Review & Publish'];
+const CATS = [
+  {name:'Loose Diamond',icon:'💎'},{name:'Ring',icon:'💍'},{name:'Earring',icon:'✨'},{name:'Bracelet',icon:'📿'},
+  {name:'Necklace',icon:'⭕'},{name:'Pendant',icon:'🔮'},{name:'Brooch',icon:'🌸'},{name:'Collection',icon:'🗂️'}
+];
+const CONDS = [
+  {name:'Excellent',sub:'Minimal wear'},{name:'New',sub:'Never worn',sel:true},{name:'Like New',sub:'Worn once or twice'},
+  {name:'Fair',sub:'Light wear'},{name:'Vintage',sub:'Noticeable patina'},{name:'Needs Repair',sub:'Requires fixing'}
+];
+
+let step = 1;
+let pState = 'high';
+let photos = [];
+let tags = ['round','brilliant','gia','natural'];
+
+// ── PRICING CONFIG ──
+const PRICING = {
+  high:      {confCls:'prc-high',confLbl:'High Confidence',  range:'$4,000 — $4,800',desc:'Based on 847 comparable sales · last 90 days',        strategies:[{p:'$3,900',l:'Fast Sale',t:'Sell Quick',tc:'tag-fast'},{p:'$4,500',l:'Recommended',t:'Best Value',tc:'tag-best',sel:true},{p:'$4,800',l:'Maximum',t:'Premium',tc:'tag-max'}],def:'4500'},
+  med:       {confCls:'prc-med', confLbl:'Medium Confidence',range:'$3,400 — $5,200',desc:'143 sales matched — add cert to improve accuracy',     strategies:[{p:'$3,400',l:'Fast Sale',t:'Sell Quick',tc:'tag-fast'},{p:'$4,200',l:'Balanced',t:'Good Value',tc:'tag-best',sel:true},{p:'$5,200',l:'Optimistic',t:'Premium',tc:'tag-max'}],def:'4200'},
+  low:       {confCls:'prc-low', confLbl:'Low Confidence',   range:'$2,800 — $6,500',desc:'Limited comparable data — complete all attributes',     strategies:[{p:'$2,800',l:'Fast Sale',t:'Sell Quick',tc:'tag-fast'},{p:'$3,800',l:'Estimated',t:'Uncertain',tc:'tag-best',sel:true},{p:'$6,500',l:'Optimistic',t:'High Risk',tc:'tag-max'}],def:'3800'},
+  above:     {confCls:'prc-high',confLbl:'High Confidence',  range:'$4,000 — $4,800',desc:'Based on 847 comparable sales · last 90 days',above:true,strategies:[{p:'$3,900',l:'Fast Sale',t:'Sell Quick',tc:'tag-fast'},{p:'$4,500',l:'Recommended',t:'Best Value',tc:'tag-best'},{p:'$4,800',l:'Maximum',t:'Premium',tc:'tag-max'}],def:'6200'},
+  refreshed: {confCls:'prc-high',confLbl:'High Confidence',  range:'$4,000 — $4,800',desc:'Based on 847 comparable sales · Updated just now',refreshed:true,strategies:[{p:'$3,900',l:'Fast Sale',t:'Sell Quick',tc:'tag-fast'},{p:'$4,500',l:'Recommended',t:'Best Value',tc:'tag-best',sel:true},{p:'$4,800',l:'Maximum',t:'Premium',tc:'tag-max'}],def:'4500'},
+  analyzing: {isAnalyzing:true},
+  incomplete:{isIncomplete:true},
+  failure:   {isFailure:true},
+};
+
+// ── INIT ──
+buildCats(); buildConds(); renderStepper(); updateScore(); updateFooter(); renderSections();
+initTags(); initUpload();
+window.addEventListener('scroll',()=>document.getElementById('sumPill').classList.toggle('vis',scrollY>180));
+
+function buildCats() {
+  document.getElementById('catGrid').innerHTML = CATS.map((c,i)=>`
+    <div class="cat-card ${i===0?'sel':''}" onclick="selCat(this,'${c.name}')">
+      <div class="cat-chk"><svg width="8" height="8" viewBox="0 0 8 8"><polyline points="1,4 3.5,6.5 7,1.5" stroke="white" stroke-width="1.5" fill="none"/></svg></div>
+      <div class="cat-icon">${c.icon}</div>
+      <span class="cat-name">${c.name}</span>
+    </div>`).join('');
+}
+function buildConds() {
+  document.getElementById('condGrid').innerHTML = CONDS.map(c=>`
+    <div class="cond-card ${c.sel?'sel':''}" onclick="selCond(this)">
+      <div class="cond-dot"></div>
+      <div class="cond-name">${c.name}</div>
+      <div class="cond-sub">${c.sub}</div>
+    </div>`).join('');
+}
+
+// ── STEPPER ──
+function renderStepper() {
+  document.getElementById('stepBar').innerHTML = STEPS.map((lbl,i)=>{
+    const n=i+1, st=n<step?'done':n===step?'active':'pending', num=st==='done'?'✓':n;
+    const sep = i<STEPS.length-1 ? '<span class="stp-connector"></span>' : '';
+    return `<div class="stp" onclick="goStep(${n})"><div class="stp-num ${st}">${num}</div><span class="stp-lbl ${st}">${lbl}</span></div>${sep}`;
+  }).join('');
+  document.getElementById('progressLine').style.width = ((step-1)/(STEPS.length-1)*100)+'%';
+}
+
+// ── NAVIGATION ──
+function goStep(n) {
+  if(n<1||n>5) return;
+  document.getElementById('panel-'+step).classList.remove('active');
+  step=n;
+  document.getElementById('panel-'+step).classList.add('active');
+  renderStepper(); updateScore(); updateFooter();
+  // show/hide right panel cards
+  const scoreCard = document.getElementById('scoreCard');
+  const pricingRightCard = document.getElementById('pricingRightCard');
+  if(n===4) { scoreCard.style.display='none'; pricingRightCard.style.display='block'; renderPricing(); updatePricingRightCard(); }
+  else { scoreCard.style.display='block'; pricingRightCard.style.display='none'; }
+  if(n===2) { renderThumbs(); renderTagChips(); }
+  if(n===5) updateReview();
+  renderSections();
+  scrollTo({top:0,behavior:'smooth'});
+}
+function nextStep(){ step===5 ? handlePublish() : goStep(step+1); }
+function prevStep(){ goStep(step-1); }
+
+function updateFooter() {
+  document.getElementById('btnPrev').style.visibility = step===1 ? 'hidden' : 'visible';
+  const btn = document.getElementById('btnNext');
+  if(step===5){ btn.innerHTML='Publish Listing ✦'; btn.classList.add('publish'); }
+  else { btn.innerHTML='Continue <span style="opacity:.4;font-size:11px;margin-left:2px">→</span>'; btn.classList.remove('publish'); }
+}
+function renderSections() {
+  setTimeout(()=>{
+    document.querySelectorAll('#panel-'+step+' .section:not(.vis)').forEach((s,i)=>
+      setTimeout(()=>s.classList.add('vis'),100*(i+1)));
+  },40);
+}
+
+// ── SCORE CARD ──
+const SCORE_DATA = [
+  {pct:40,sub:'Select category and condition to build your listing.',payout:'—',fee:'—'},
+  {pct:58,sub:'Add photos and a compelling description to stand out.',payout:'—',fee:'—'},
+  {pct:78,sub:'Full attributes set. Your listing ranks in the top 18%.',payout:'$4,140',fee:'$360'},
+  {pct:88,sub:'Pricing set. Top 4% visibility.',payout:'$4,140',fee:'$360'},
+  {pct:96,sub:'Outstanding score. Ready to go live.',payout:'$4,140',fee:'$360'},
+];
+const CHECK_LABELS = ['Category selected','Title & description','Stone attributes','Certification added','Price set'];
+const CHECK_BY_STEP = [[true,false,false,false,false],[true,true,false,false,false],[true,true,true,true,false],[true,true,true,true,true],[true,true,true,true,true]];
+
+function updateScore() {
+  const d = SCORE_DATA[step-1];
+  document.getElementById('scorePct').textContent = d.pct+'%';
+  document.getElementById('scoreBar').style.width = d.pct+'%';
+  document.getElementById('scoreSub').textContent = d.sub;
+  document.getElementById('payoutVal').textContent = d.payout;
+  document.getElementById('feeVal').textContent = d.fee;
+  const checks = CHECK_BY_STEP[step-1];
+  document.getElementById('scoreChecks').innerHTML = CHECK_LABELS.map((lbl,i)=>
+    `<div class="score-chk ${checks[i]?'done':'pend'}"><div class="chk-ico ${checks[i]?'chk-done':'chk-pend'}">${checks[i]?'✓':''}</div>${lbl}</div>`
+  ).join('');
+}
+
+function updatePricingRightCard() {
+  const cfg = PRICING[pState];
+  const card = document.getElementById('pricingRightCard');
+  if(!cfg||cfg.isAnalyzing||cfg.isIncomplete||cfg.isFailure) return;
+  card.className = 'pricing-right-card '+cfg.confCls;
+  document.getElementById('prcRange').textContent = cfg.range;
+  const confRow = document.getElementById('prcConfRow');
+  confRow.innerHTML = `<div class="prc-conf-dot"></div><span class="prc-conf-lbl">${cfg.confLbl}</span>`;
+  document.getElementById('prcDesc').textContent = cfg.desc;
+  const price = parseFloat((document.getElementById('priceIn')?.value)||cfg.def)||parseFloat(cfg.def);
+  const payout = Math.round(price*.92), fee = Math.round(price*.08);
+  document.getElementById('prcPayout').textContent = '$'+payout.toLocaleString();
+  document.getElementById('prcFee').textContent = `After 8% GemGem fee · − $${fee.toLocaleString()}`;
+}
+
+// ── INTERACTIONS ──
+function selCat(el) { document.querySelectorAll('.cat-card').forEach(c=>c.classList.remove('sel')); el.classList.add('sel'); updateSum(); }
+function selCond(el) { document.querySelectorAll('.cond-card').forEach(c=>c.classList.remove('sel')); el.classList.add('sel'); updateSum(); }
+function selAttr(el) {
+  el.closest('.attr-opts').querySelectorAll('.attr-btn').forEach(b=>b.classList.remove('sel')); el.classList.add('sel');
+  const tip = document.getElementById('expertTip'); if(tip) setTimeout(()=>tip.classList.add('show'),300);
+  updateSum();
+}
+function selCert(el) { el.closest('.cert-opts').querySelectorAll('.cert-btn').forEach(b=>b.classList.remove('sel')); el.classList.add('sel'); }
+function updateCarat(v) { document.getElementById('caratVal').textContent=(v/10).toFixed(1)+' ct'; updateSum(); }
+function updateSum() {
+  const cat = document.querySelector('.cat-card.sel .cat-name')?.textContent||'Loose Diamond';
+  const cond = document.querySelector('.cond-card.sel .cond-name')?.textContent||'New';
+  const shape = document.querySelector('#shapeOpts .attr-btn.sel .attr-top')?.textContent||'Round';
+  const cut = document.querySelector('#cutOpts .attr-btn.sel .attr-top')?.textContent||'Ideal';
+  document.getElementById('sumText').textContent = `${cat} · ${cond} · ${shape} · ${cut}`;
+}
+
+// ── TAGS ──
+function initTags() {
+  renderTagChips();
+  const inp = document.getElementById('tagIn');
+  if(!inp) return;
+  inp.addEventListener('keydown',e=>{
+    if((e.key==='Enter'||e.key===',')&&inp.value.trim()){ e.preventDefault(); addTag(inp.value.replace(/,/g,'').trim()); inp.value=''; }
+    if(e.key==='Backspace'&&!inp.value&&tags.length){ tags.pop(); renderTagChips(); }
+  });
+  inp.addEventListener('blur',()=>{ if(inp.value.trim()){ addTag(inp.value.replace(/,/g,'').trim()); inp.value=''; } });
+}
+function addTag(v){ if(!v||tags.includes(v)||tags.length>=12) return; tags.push(v); renderTagChips(); }
+function removeTag(i){ tags.splice(i,1); renderTagChips(); }
+function renderTagChips() {
+  const c = document.getElementById('tagsChips'); if(!c) return;
+  c.innerHTML = tags.map((t,i)=>
+    `<span class="tag-chip" onclick="removeTag(${i})">${t}<svg width="9" height="9" viewBox="0 0 9 9" style="flex-shrink:0"><line x1="2" y1="2" x2="7" y2="7" stroke="currentColor" stroke-width="1.5"/><line x1="7" y1="2" x2="2" y2="7" stroke="currentColor" stroke-width="1.5"/></svg></span>`
+  ).join('');
+}
+
+// ── PHOTO UPLOAD ──
+function initUpload() {
+  const outer = document.getElementById('uploadOuter');
+  if(!outer) return;
+  outer.addEventListener('dragover',e=>{e.preventDefault();outer.classList.add('drag-over')});
+  outer.addEventListener('dragleave',()=>outer.classList.remove('drag-over'));
+  outer.addEventListener('drop',e=>{
+    e.preventDefault(); outer.classList.remove('drag-over');
+    Array.from(e.dataTransfer.files).filter(f=>f.type.startsWith('image/')).forEach(readPhoto);
+  });
+}
+function onFileSelect(inp){ Array.from(inp.files).forEach(readPhoto); inp.value=''; }
+function readPhoto(f) {
+  if(photos.length>=10) return;
+  const r = new FileReader();
+  r.onload = e=>{ photos.push({url:e.target.result,name:f.name}); renderThumbs(); };
+  r.readAsDataURL(f);
+}
+function removePhoto(i){ photos.splice(i,1); renderThumbs(); }
+function renderThumbs() {
+  const grid = document.getElementById('thumbGrid');
+  const zone = document.getElementById('uploadZone');
+  const section = document.getElementById('thumbSection');
+  const outer = document.getElementById('uploadOuter');
+  if(!grid) return;
+  if(!photos.length) {
+    zone.style.display='flex'; section.style.display='none';
+    outer.classList.remove('has-photos'); return;
+  }
+  zone.style.display='none'; section.style.display='block';
+  outer.classList.add('has-photos');
+  document.getElementById('thumbCount').textContent = `${photos.length} photo${photos.length!==1?'s':''}`;
+  grid.innerHTML = photos.map((p,i)=>`
+    <div class="thumb">
+      <img src="${p.url}" style="width:100%;height:100%;object-fit:cover;position:absolute;inset:0" alt="">
+      <div class="thumb-ov">
+        <button class="thumb-rm" onclick="removePhoto(${i})">
+          <svg width="10" height="10" viewBox="0 0 10 10"><line x1="2" y1="2" x2="8" y2="8" stroke="white" stroke-width="1.5"/><line x1="8" y1="2" x2="2" y2="8" stroke="white" stroke-width="1.5"/></svg>
+        </button>
+      </div>
+      ${i===0?'<div class="thumb-cover">Cover</div>':''}
+    </div>`).join('');
+}
+
+// ── PRICING STATE MACHINE ──
+function activateState(btn, type) {
+  document.querySelectorAll('.state-btn').forEach(b=>b.classList.remove('active'));
+  btn.classList.add('active');
+  pState = type;
+  if(step!==4) {
+    document.getElementById('panel-'+step).classList.remove('active');
+    step=4;
+    document.getElementById('panel-'+step).classList.add('active');
+    renderStepper(); updateScore(); updateFooter(); renderSections();
+    scrollTo({top:0,behavior:'smooth'});
+  }
+  const scoreCard = document.getElementById('scoreCard');
+  const pricingRightCard = document.getElementById('pricingRightCard');
+  scoreCard.style.display='none';
+  pricingRightCard.style.display='block';
+  renderPricing();
+  updatePricingRightCard();
+}
+
+function renderPricing() {
+  const cfg = PRICING[pState];
+  const el = document.getElementById('pricingUI');
+  if(!el) return;
+
+  if(cfg.isAnalyzing) {
+    el.innerHTML = `
+      <div class="card" style="position:relative;min-height:220px;overflow:hidden">
+        <div class="analyzing-ov">
+          <div class="spinner"></div>
+          <div class="analyzing-txt">Analysing market data…</div>
+          <div class="analyzing-sub">Comparing 2,400+ recent transactions</div>
+        </div>
+        <div class="skel" style="height:14px;width:48%;margin-bottom:14px"></div>
+        <div class="skel" style="height:44px;width:70%;margin-bottom:22px"></div>
+        <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:9px">
+          <div class="skel" style="height:80px"></div>
+          <div class="skel" style="height:80px"></div>
+          <div class="skel" style="height:80px"></div>
+        </div>
+      </div>`;
+    setTimeout(()=>{ if(pState==='analyzing'){ pState='high'; document.getElementById('sb-high').click(); } },2800);
+    return;
+  }
+
+  if(cfg.isIncomplete) {
+    el.innerHTML = `
+      <div class="banner banner-incomplete"><span style="font-size:16px">⏳</span><div><strong>Loading estimate…</strong> Missing attributes: Color, Clarity. Complete Step 3 for accurate pricing.</div></div>
+      <div class="card">
+        <div class="skel" style="height:40px;width:60%;margin-bottom:18px"></div>
+        <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:9px;margin-bottom:18px">
+          <div class="skel" style="height:80px"></div><div class="skel" style="height:80px"></div><div class="skel" style="height:80px"></div>
+        </div>
+        <div class="skel" style="height:52px"></div>
+      </div>`;
+    setTimeout(()=>{ if(pState==='incomplete'){ pState='med'; document.getElementById('sb-med').click(); } },3500);
+    return;
+  }
+
+  if(cfg.isFailure) {
+    el.innerHTML = `
+      <div class="failure-box">
+        <div class="failure-ico">⚠</div>
+        <div class="failure-ttl">Unable to load market estimate</div>
+        <div class="failure-sub">A problem occurred fetching live market data. Retry or enter your price manually.</div>
+        <button class="btn-retry" onclick="document.getElementById('sb-analyze').click()">↻ Retry</button>
+        <button class="btn-manual" onclick="showManual()">Enter manually</button>
+      </div>`;
+    return;
+  }
+
+  const aboveBanner = cfg.above ? `<div class="banner banner-above"><span style="font-size:16px">⚠</span><div><strong>Above recommended range.</strong> Listings priced above $5,200 take 3× longer to sell. Consider lowering to the recommended range.</div></div>` : '';
+  const refreshBadge = cfg.refreshed ? `<div style="display:inline-flex;align-items:center;gap:6px;background:var(--green-pale);border:1px solid #6EE7B7;border-radius:6px;padding:5px 13px;font-size:12px;font-weight:600;color:var(--green);margin-bottom:14px">✓ Estimate refreshed from latest data</div>` : '';
+
+  // Build why-factors for trusted advisor explanation
+  const whyFactors = pState==='high'
+    ? [{icon:'💎',label:'Ideal cut',note:'Top 3% · +18% vs Excellent',val:'+$540'},{icon:'🎨',label:'D color',note:'Colorless — rarest grade',val:'+$320'},{icon:'🔬',label:'VVS1 clarity',note:'Virtually flawless to experts',val:'+$210'},{icon:'📜',label:'GIA certified',note:'+40% buyer confidence',val:'+$180'}]
+    : pState==='med'
+    ? [{icon:'💎',label:'Good cut',note:'Affects brilliance slightly',val:'−$200'},{icon:'🎨',label:'G–H color',note:'Near colorless, excellent value',val:'±$0'},{icon:'🔬',label:'VS clarity',note:'Eye clean, good value grade',val:'−$80'},{icon:'📜',label:'Certification',note:'Missing — reduces confidence',val:'−$350'}]
+    : [{icon:'⚠️',label:'Incomplete data',note:'Color & clarity not specified',val:'Unknown'},{icon:'📊',label:'Limited comps',note:'Few recent sales to compare',val:'Uncertain'},{icon:'💡',label:'Add attributes',note:'Return to Step 3 to complete',val:'→ Step 3'}];
+
+  const whyHTML = `<div style="display:flex;flex-direction:column;gap:8px;margin-bottom:20px">
+    ${whyFactors.map(f=>`
+      <div style="display:flex;align-items:center;gap:12px;padding:10px 12px;background:var(--bg);border-radius:8px;border:1px solid var(--border)">
+        <span style="font-size:16px;flex-shrink:0">${f.icon}</span>
+        <div style="flex:1">
+          <div style="font-size:13px;font-weight:600;color:var(--navy)">${f.label}</div>
+          <div style="font-size:11.5px;color:var(--text3);font-weight:300">${f.note}</div>
+        </div>
+        <span style="font-size:12.5px;font-weight:600;color:${f.val.startsWith('+')? 'var(--green)':f.val.startsWith('−')?'var(--red)':'var(--text2)'};white-space:nowrap">${f.val}</span>
+      </div>`).join('')}
+  </div>`;
+
+  el.innerHTML = `
+    ${refreshBadge}
+    ${aboveBanner}
+    <div class="card" style="margin-bottom:12px">
+      <div style="display:flex;align-items:flex-start;justify-content:space-between;margin-bottom:6px">
+        <div>
+          <div style="font-size:10.5px;font-weight:600;letter-spacing:.12em;text-transform:uppercase;color:var(--text3);margin-bottom:8px">Market Range</div>
+          <div class="mkt-range-val">${cfg.range}</div>
+        </div>
+        <div style="text-align:right">
+          <span class="conf-badge conf-${pState==='med'?'med':pState==='low'?'low':'high'}">
+            <span class="conf-dot"></span>${cfg.confLbl}
+          </span>
+          <div style="font-size:11px;color:var(--text3);margin-top:8px;font-weight:300;max-width:160px;line-height:1.45">${cfg.desc}</div>
+          <button onclick="document.getElementById('sb-analyze').click()" style="font-size:11px;color:var(--blue2);background:none;border:none;cursor:pointer;font-family:'DM Sans',sans-serif;margin-top:5px;font-weight:500">↻ Refresh</button>
+        </div>
+      </div>
+      <hr style="border:none;border-top:1px solid var(--border);margin:16px 0">
+      <div style="font-size:10.5px;font-weight:600;letter-spacing:.12em;text-transform:uppercase;color:var(--text3);margin-bottom:12px">Why this price?</div>
+      ${whyHTML}
+      <div style="font-size:10.5px;font-weight:600;letter-spacing:.12em;text-transform:uppercase;color:var(--text3);margin-bottom:12px">Choose your strategy</div>
+      <div class="strategy-grid">
+        ${cfg.strategies.map(s=>`
+          <div class="strategy-card ${s.sel?'sel':''}" onclick="selStrategy(this,'${s.p}')">
+            <div class="strat-price">${s.p}</div>
+            <div class="strat-lbl">${s.l}</div>
+            <span class="strat-tag ${s.tc}">${s.t}</span>
+          </div>`).join('')}
+      </div>
+    </div>
+    <div class="card">
+      <div style="font-size:10.5px;font-weight:600;letter-spacing:.12em;text-transform:uppercase;color:var(--text3);margin-bottom:12px">Your listing price</div>
+      <div class="price-wrap" style="margin-bottom:10px">
+        <span class="price-pfx">$</span>
+        <input class="price-in" id="priceIn" value="${cfg.def}" oninput="onPrice(this)">
+      </div>
+      <div class="price-fb" id="priceFb"></div>
+    </div>`;
+  onPrice(document.getElementById('priceIn'));
+}
+
+function showManual() {
+  document.getElementById('pricingUI').innerHTML = `
+    <div class="card">
+      <div style="font-size:10.5px;font-weight:600;letter-spacing:.12em;text-transform:uppercase;color:var(--text3);margin-bottom:12px">Enter price manually</div>
+      <div class="price-wrap" style="margin-bottom:10px"><span class="price-pfx">$</span><input class="price-in" id="priceIn" value="4500" oninput="onPrice(this)"></div>
+      <div class="price-fb" id="priceFb"></div>
+      <div class="fld-hint" style="margin-top:8px">Market data unavailable — enter based on your knowledge of the diamond's value.</div>
+    </div>`;
+  onPrice(document.getElementById('priceIn'));
+}
+
+function selStrategy(el, p) {
+  el.closest('.strategy-grid').querySelectorAll('.strategy-card').forEach(c=>c.classList.remove('sel')); el.classList.add('sel');
+  const inp = document.getElementById('priceIn');
+  if(inp){ inp.value=p.replace('$','').replace(',',''); onPrice(inp); }
+}
+
+function onPrice(el) {
+  const v = parseFloat(el?.value||0);
+  const fb = document.getElementById('priceFb'); if(!fb) return;
+  if(isNaN(v)||v<=0){ fb.innerHTML='<span class="fb-bad">Please enter a valid price</span>'; return; }
+  fb.innerHTML = v>5200 ? '<span class="fb-warn">⚠ Above recommended range — may take longer to sell</span>'
+    : v<3900 ? '<span class="fb-good">✓ Priced for a fast sale</span>'
+    : '<span class="fb-good">✓ Competitive price — strong visibility</span>';
+  const payout=Math.round(v*.92), fee=Math.round(v*.08);
+  document.getElementById('payoutVal').textContent='$'+payout.toLocaleString();
+  document.getElementById('feeVal').textContent='$'+fee.toLocaleString();
+  // update right panel
+  const prcPayout=document.getElementById('prcPayout');
+  const prcFee=document.getElementById('prcFee');
+  const prcVel=document.getElementById('prcVelocity');
+  if(prcPayout) prcPayout.textContent='$'+payout.toLocaleString();
+  if(prcFee) prcFee.textContent=`After 8% GemGem fee · − $${fee.toLocaleString()}`;
+  if(prcVel) {
+    const days = v>5200 ? '45–70 days' : v<3900 ? '3–7 days' : '12–18 days';
+    const tip = v>5200 ? 'Consider lowering to sell faster.' : v<3900 ? 'Great for a quick, clean sale.' : 'Competitive pricing — solid balance.';
+    prcVel.innerHTML = `Stones at this price typically sell in <strong style="color:rgba(255,255,255,.7)">${days}</strong>. ${tip}`;
+  }
+}
+
+// ── REVIEW UPDATE ──
+function updateReview() {
+  const title = document.getElementById('titleIn')?.value||'1.52ct Round Brilliant Loose Diamond, GIA Certified, D–IF';
+  const cat = document.querySelector('.cat-card.sel .cat-name')?.textContent||'Loose Diamond';
+  const cond = document.querySelector('.cond-card.sel .cond-name')?.textContent||'New';
+  const shape = document.querySelector('#shapeOpts .attr-btn.sel .attr-top')?.textContent||'Round';
+  const cut = document.querySelector('#cutOpts .attr-btn.sel .attr-top')?.textContent||'Ideal';
+  const color = document.querySelector('#colorOpts .attr-btn.sel .attr-top')?.textContent||'D';
+  const clarity = document.querySelector('#clarityOpts .attr-btn.sel .attr-top')?.textContent||'VVS1';
+  const cert = document.querySelector('.cert-btn.sel')?.textContent||'GIA';
+  const carat = document.getElementById('caratVal')?.textContent||'1.5 ct';
+  const priceInp = document.getElementById('priceIn');
+  const price = priceInp ? parseFloat(priceInp.value)||4500 : 4500;
+  const payout = Math.round(price*.92), fee = Math.round(price*.08);
+
+  const revTitle=document.getElementById('revTitle'); if(revTitle) revTitle.textContent=title||'—';
+  const revCat=document.getElementById('revCat'); if(revCat) revCat.textContent=cat;
+  const revCond=document.getElementById('revCond'); if(revCond) revCond.textContent=cond;
+  const revCarat=document.getElementById('revCarat'); if(revCarat) revCarat.textContent=carat.replace(' ct','');
+  const revShape=document.getElementById('revShape'); if(revShape) revShape.textContent=shape;
+  const revCut=document.getElementById('revCut'); if(revCut) revCut.textContent=cut;
+  const revColor=document.getElementById('revColor'); if(revColor) revColor.textContent=color;
+  const revClarity=document.getElementById('revClarity'); if(revClarity) revClarity.textContent=clarity;
+  const revCertEl=document.getElementById('revCert'); if(revCertEl) revCertEl.textContent=cert;
+  const revPrice=document.getElementById('revPrice'); if(revPrice) revPrice.textContent='$'+price.toLocaleString();
+  const revFee=document.getElementById('revFee'); if(revFee) revFee.textContent='− $'+fee.toLocaleString();
+  const revPayout=document.getElementById('revPayout'); if(revPayout) revPayout.textContent='$'+payout.toLocaleString();
+  const prevPrice=document.getElementById('prevPrice'); if(prevPrice) prevPrice.textContent='$'+price.toLocaleString();
+  const prevName=document.getElementById('prevName'); if(prevName) prevName.textContent=title||'Your diamond listing';
+  const prevTags=document.getElementById('prevTags');
+  if(prevTags) prevTags.innerHTML=[shape,carat,color+' Color',clarity,cert,cut+' Cut'].map(t=>`<span class="preview-tag">${t}</span>`).join('');
+
+  // show first photo in review if available
+  const revImgs=document.getElementById('revImgs');
+  if(revImgs&&photos.length) {
+    revImgs.innerHTML=photos.slice(0,2).map(p=>`<div class="rev-img"><img src="${p.url}" style="width:100%;height:100%;object-fit:cover" alt=""></div>`).join('');
+  }
+  const prevZone=document.getElementById('prevImgZone');
+  if(prevZone&&photos.length) {
+    prevZone.innerHTML=`<img src="${photos[0].url}" style="width:100%;height:100%;object-fit:cover" alt="">`;
+  }
+}
+
+// ── PUBLISH ──
+function handlePublish() {
+  const btn = document.getElementById('btnNext');
+  btn.textContent='Publishing…'; btn.style.background='var(--navy2)';
+  setTimeout(()=>{ btn.textContent='✓ Live — congratulations!'; btn.style.background='var(--green)'; },1800);
+}
+
+// ── CHAT FLOATING WIDGET ──
+let chatOpen = false;
+function toggleChat() {
+  chatOpen = !chatOpen;
+  const panel = document.getElementById('chatPanel');
+  const unread = document.getElementById('chatUnread');
+  panel.style.display = chatOpen ? 'flex' : 'none';
+  if(unread) unread.style.display = 'none';
+}
+// Show FAB after 30 seconds
+setTimeout(() => {
+  const fab = document.getElementById('chatFab');
+  if(fab) fab.style.display = 'block';
+}, 30000);
+
+// ── CHATBOT ──
+const CHAT_RESPONSES = {
+  "what's my diamond worth": () => {
+    const carat=document.getElementById('caratVal')?.textContent||'1.5 ct';
+    const shape=document.querySelector('#shapeOpts .attr-btn.sel .attr-top')?.textContent||'Round';
+    const color=document.querySelector('#colorOpts .attr-btn.sel .attr-top')?.textContent||'D';
+    const clarity=document.querySelector('#clarityOpts .attr-btn.sel .attr-top')?.textContent||'VVS1';
+    return `Based on your current attributes — **${carat} ${shape}, ${color} color, ${clarity} clarity** — comparable GemGem listings are trading between **$3,800–$5,200**.\n\nA GIA certificate and Ideal cut can push this toward the upper range. Would you like tips on maximising your price?`;
+  },
+  "how is fee calculated": ()=>"GemGem charges a flat **8% service fee** on your final sale price. This covers secure payment processing, buyer guarantee, and GemGem Global Insurance during transit.\n\nSo if you list at **$4,500**, your fee is **$360** and your payout is **$4,140**.",
+  "best price for fast sale": ()=>"For a fast sale (typically within 7–14 days), we recommend pricing **5–8% below the mid-market range**.\n\nFor your diamond, that would be around **$3,900–$4,100**. Listings in this bracket get 3× more buyer enquiries in the first 48 hours.",
+  "default": q=>{
+    const lcq=q.toLowerCase();
+    if(lcq.includes('ship')) return "GemGem arranges fully **insured door-to-door collection** through our logistics partner. Once your item sells, we'll contact you within 24 hours to arrange pickup. Packaging is provided.\n\nShipping & insurance is covered by GemGem — no cost to you.";
+    if(lcq.includes('cert')||lcq.includes('gia')) return "**GIA certification** is the gold standard in diamond grading. Listings with a GIA cert convert **40% better** on GemGem and command a 15–20% price premium over non-certified stones.\n\nIf you have a cert, add the certificate number in Step 3 for maximum trust signals.";
+    if(lcq.includes('photo')||lcq.includes('image')||lcq.includes('pic')) return "Great photos are the #1 driver of buyer enquiries. Our top tips:\n\n• Use natural light, no flash\n• White or neutral grey background\n• Photograph from multiple angles (top, side, table-down)\n• At least 4 photos — listings with 6+ photos sell 2.4× faster";
+    if(lcq.includes('how long')||lcq.includes('time')) return "Average time-to-sale on GemGem depends on pricing:\n\n• **Priced at market** — 14–21 days\n• **5% below market** — 7–10 days\n• **Premium priced** — 30–60 days\n\nMost sellers see their first buyer enquiry within **48 hours** of going live.";
+    return `Good question! I can help with diamond valuations, pricing strategy, certification advice, and listing optimisation. Could you give me a bit more detail about what you'd like to know?`;
+  }
+};
+
+let chatTyping = false;
+function initChat() {
+  addBotMsg("Hi! I'm your GemGem diamond advisor. I can help you value your stone, optimise your price, and answer any listing questions.\n\nWhat would you like to know?");
+}
+function addBotMsg(text) {
+  const msgs=document.getElementById('chatMsgs');
+  const div=document.createElement('div'); div.className='msg msg-bot';
+  div.innerHTML=`<div class="msg-bubble">${text.replace(/\*\*(.*?)\*\*/g,'<strong>$1</strong>').replace(/\n/g,'<br>')}</div><div class="msg-time">just now</div>`;
+  msgs.appendChild(div); msgs.scrollTop=msgs.scrollHeight;
+}
+function addUserMsg(text) {
+  const msgs=document.getElementById('chatMsgs');
+  const div=document.createElement('div'); div.className='msg msg-user';
+  div.innerHTML=`<div class="msg-bubble">${text}</div><div class="msg-time">just now</div>`;
+  msgs.appendChild(div); msgs.scrollTop=msgs.scrollHeight;
+}
+function showTyping() {
+  const msgs=document.getElementById('chatMsgs');
+  const div=document.createElement('div'); div.className='msg msg-bot'; div.id='typingMsg';
+  div.innerHTML='<div class="msg-bubble" style="padding:0"><div class="typing-bubble"><div class="typing-dot"></div><div class="typing-dot"></div><div class="typing-dot"></div></div></div>';
+  msgs.appendChild(div); msgs.scrollTop=msgs.scrollHeight;
+}
+function hideTyping(){ const t=document.getElementById('typingMsg'); if(t) t.remove(); }
+function sendChat() {
+  const inp=document.getElementById('chatIn');
+  const q=inp.value.trim(); if(!q||chatTyping) return;
+  inp.value=''; chatTyping=true;
+  addUserMsg(q); showTyping();
+  const lq=q.toLowerCase();
+  let respFn=CHAT_RESPONSES['default'];
+  for(const key of Object.keys(CHAT_RESPONSES)){
+    if(key!=='default'&&lq.includes(key)){ respFn=CHAT_RESPONSES[key]; break; }
+  }
+  setTimeout(()=>{ hideTyping(); const resp=typeof respFn==='function'?respFn(q):respFn; addBotMsg(resp); chatTyping=false; },900+Math.random()*600);
+}
+function askQ(btn) {
+  document.getElementById('chatIn').value=btn.textContent;
+  sendChat();
+  document.getElementById('chatQs').style.display='none';
+}
+
+// ── START ──
+// Lazy init chat on first open
+let chatInited = false;
+const _origToggleChat = toggleChat;
+toggleChat = function() {
+  if(!chatInited) { initChat(); chatInited = true; }
+  _origToggleChat();
+};
+renderPricing();
+</script>
+</body>
+</html>
+HTMLEOF
+echo "Lines: $(wc -l < /mnt/user-data/outputs/gemgem_v2.html)"
