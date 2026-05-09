@@ -1,0 +1,824 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>GemGem Exchange — Seller Listing Flow</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Sora:wght@400;500;600;700&family=DM+Sans:wght@300;400;500;600&display=swap" rel="stylesheet">
+<style>
+*{box-sizing:border-box;margin:0;padding:0}
+:root{
+  --navy:#0A1628;--blue:#2463EB;--blue-lt:#EBF2FF;--blue-md:#BFDBFE;
+  --green:#15803D;--green-lt:#F0FDF4;--green-md:#BBF7D0;
+  --bg:#EFF1F5;--border:#E2E8F0;
+  --t1:#0A1628;--t2:#475569;--t3:#94A3B8;--t4:#64748B;
+}
+body{font-family:'DM Sans',sans-serif;background:var(--bg);color:var(--t1);-webkit-font-smoothing:antialiased;min-height:100vh}
+.sora{font-family:'Sora',sans-serif}
+button{font-family:'DM Sans',sans-serif;cursor:pointer;transition:all .15s}
+input,select{font-family:'DM Sans',sans-serif;font-size:13px;color:var(--t1);width:100%;padding:9px 12px;border:1.5px solid var(--border);border-radius:8px;background:#fff;outline:none;transition:border-color .15s;-webkit-appearance:none;appearance:none}
+input:focus,select:focus{border-color:var(--blue)}
+input::placeholder{color:var(--t3)}
+input[type=range]{-webkit-appearance:none;appearance:none;height:5px;background:#E2E8F0;border-radius:3px;padding:0;border:none;cursor:pointer}
+input[type=range]::-webkit-slider-thumb{-webkit-appearance:none;width:18px;height:18px;border-radius:50%;background:var(--blue);cursor:pointer;border:2px solid #fff;box-shadow:0 1px 4px rgba(36,99,235,.4)}
+details>summary{list-style:none;cursor:pointer}
+details>summary::-webkit-details-marker{display:none}
+@keyframes fadeIn{from{opacity:0;transform:translateY(7px)}to{opacity:1;transform:translateY(0)}}
+@keyframes shimmer{0%{background-position:-200% 0}100%{background-position:200% 0}}
+.anim-fade{animation:fadeIn .3s ease-out both}
+.shimmer-bg{background:linear-gradient(90deg,rgba(255,255,255,.04) 25%,rgba(255,255,255,.16) 50%,rgba(255,255,255,.04) 75%);background-size:200% 100%;animation:shimmer 1.5s infinite;border-radius:5px}
+</style>
+</head>
+<body>
+<div id="root"></div>
+<script>
+// ── Tiny DOM helper ──────────────────────────────────────────────
+const SVG_NS = 'http://www.w3.org/2000/svg';
+const SVG_TAGS = new Set(['svg','path','circle','rect','ellipse','polygon','g','line','polyline']);
+
+function h(tag, props, ...children) {
+  const el = SVG_TAGS.has(tag)
+    ? document.createElementNS(SVG_NS, tag)
+    : document.createElement(tag);
+
+  if (props) {
+    for (const [k, v] of Object.entries(props)) {
+      if (v === null || v === undefined || v === false) continue;
+      if (k === 'style' && typeof v === 'object') { Object.assign(el.style, v); }
+      else if (k.startsWith('on')) { el.addEventListener(k.slice(2).toLowerCase(), v); }
+      else if (k === 'className') { el.className = v; }
+      else { el.setAttribute(k, v); }
+    }
+  }
+
+  function append(c) {
+    if (c === null || c === undefined || c === false || c === '') return;
+    if (Array.isArray(c)) { c.forEach(append); return; }
+    if (c instanceof Node) { el.appendChild(c); return; }
+    el.appendChild(document.createTextNode(String(c)));
+  }
+  children.forEach(append);
+  return el;
+}
+
+function div(style, ...kids) { return h('div', {style}, ...kids); }
+function span(style, text) { return h('span', {style}, text); }
+function txt(t) { return document.createTextNode(t); }
+
+// ── Data ─────────────────────────────────────────────────────────
+const SHAPES   = ['Round','Oval','Cushion','Princess','Emerald','Pear','Radiant','Marquise'];
+const COLORS   = ['D','E','F','G','H','I','J','K','L','M'];
+const CLARITIES= ['FL','IF','VVS1','VVS2','VS1','VS2','SI1','SI2','I1','I2'];
+const CUTS     = ['Excellent','Very Good','Good','Fair','Poor'];
+const CERTS    = ['GIA','IGI','HRD','AGS','None'];
+const FLUOR    = ['None','Faint','Medium','Strong','Very Strong'];
+
+const SHAPE_D = {
+  Round:    '<circle cx="14" cy="14" r="9.5"/>',
+  Oval:     '<ellipse cx="14" cy="14" rx="9.5" ry="6"/>',
+  Cushion:  '<rect x="4.5" y="4.5" width="19" height="19" rx="5"/>',
+  Princess: '<rect x="4.5" y="4.5" width="19" height="19" rx="1.5"/>',
+  Emerald:  '<rect x="2.5" y="6.5" width="23" height="15" rx="1.5"/>',
+  Pear:     '<path d="M14 3.5 Q22.5 11 14 24.5 Q5.5 11 14 3.5Z"/>',
+  Radiant:  '<polygon points="14,3 22.5,6.5 22.5,21.5 14,25 5.5,21.5 5.5,6.5"/>',
+  Marquise: '<ellipse cx="14" cy="14" rx="10" ry="5"/>',
+};
+
+function shapeSvg(name, active) {
+  const el = document.createElementNS(SVG_NS, 'svg');
+  el.setAttribute('width','28'); el.setAttribute('height','28');
+  el.setAttribute('viewBox','0 0 28 28');
+  el.setAttribute('fill','none');
+  el.setAttribute('stroke', active ? '#2463EB' : '#94A3B8');
+  el.setAttribute('stroke-width','1.8');
+  el.innerHTML = SHAPE_D[name] || SHAPE_D.Round;
+  return el;
+}
+
+function iconSvg(d, stroke, size=14) {
+  const el = document.createElementNS(SVG_NS,'svg');
+  el.setAttribute('width', size); el.setAttribute('height', size);
+  el.setAttribute('viewBox','0 0 24 24');
+  el.setAttribute('fill','none');
+  el.setAttribute('stroke', stroke);
+  el.setAttribute('stroke-width','2');
+  el.setAttribute('stroke-linecap','round');
+  el.setAttribute('stroke-linejoin','round');
+  el.innerHTML = d;
+  return el;
+}
+
+const fmt = n => '$' + Math.round(n).toLocaleString('en-US');
+
+function calcEst(form, cert) {
+  const c = parseFloat(form.carat);
+  if (!c || !form.color || !form.clarity) return null;
+  const PPC  = [10000,9200,8500,7800,7200,6600,6000,5400,4800,4200];
+  const clf  = [1.5,1.4,1.3,1.2,1.1,1.0,.9,.8,.7,.65];
+  const cutM = {Excellent:1.15,'Very Good':1.05,Good:1.0,Fair:.88,Poor:.75};
+  const certM= cert && cert!=='None' ? 1.07 : 1;
+  const base = (PPC[COLORS.indexOf(form.color)]||5000)
+    * Math.pow(c,1.85)
+    * (clf[CLARITIES.indexOf(form.clarity)]||1)
+    * (form.cut ? cutM[form.cut]||1 : 1)
+    * certM;
+  const sp = cert && cert!=='None' ? .07 : .13;
+  return {
+    low:  Math.round(base*(1-sp)/100)*100,
+    mid:  Math.round(base/100)*100,
+    high: Math.round(base*(1+sp)/100)*100,
+  };
+}
+
+function critFilled(form) {
+  return ['shape','carat','color','clarity','cut'].filter(k=>form[k]).length;
+}
+function missingFields(form) {
+  return ['shape','carat','color','clarity','cut'].filter(k=>!form[k]);
+}
+
+// ── State ────────────────────────────────────────────────────────
+let S = {
+  step: 1, demo: null, aiLoading: false,
+  form: {shape:'',carat:'',color:'',clarity:'',cut:'',polish:'',symmetry:''},
+  cert: {certifier:'',reportNumber:'',fluorescence:''},
+  strategy: 'balanced', slider: 50,
+};
+let aiTimer = null;
+
+function setState(patch) { Object.assign(S, patch); render(); }
+
+function setForm(k, v) {
+  S.form = {...S.form, [k]: v};
+  if (aiTimer) clearTimeout(aiTimer);
+  if (critFilled(S.form) > 0 && !S.demo) {
+    S.aiLoading = true; render();
+    aiTimer = setTimeout(() => { S.aiLoading = false; render(); }, 700);
+  } else render();
+}
+function setCert(k, v) { S.cert = {...S.cert, [k]: v}; render(); }
+
+function getAiState() {
+  if (S.demo==='loading' || S.aiLoading) return 'loading';
+  if (S.demo==='error') return 'error';
+  const ef = demoForm();
+  const ec = demoCert();
+  if (S.demo==='insufficient') return 'insufficient';
+  const cc = critFilled(ef);
+  const est = calcEst(ef, ec);
+  if (S.demo==='ready' || (cc===5 && est)) return 'ready';
+  if (cc>=3 && est) return 'partial';
+  if (cc>=1) return 'low';
+  return 'empty';
+}
+
+function demoForm() {
+  return S.demo
+    ? {shape:'Round',carat:'1.2',color:'D',clarity:'VVS1',cut:'Excellent'}
+    : S.form;
+}
+function demoCert() {
+  return S.demo ? 'GIA' : S.cert.certifier;
+}
+
+// ── Demo Bar ─────────────────────────────────────────────────────
+function renderDemoBar() {
+  const demos = [
+    {id:null,    lbl:'Interactive'},
+    {id:'ready', lbl:'✓ All data'},
+    {id:'loading',lbl:'⟳ Loading'},
+    {id:'insufficient',lbl:'⚠ Incomplete'},
+    {id:'error', lbl:'✕ API error'},
+  ];
+  return div({background:'#060F1E',padding:'6px 20px',display:'flex',gap:'6px',alignItems:'center',flexWrap:'wrap'},
+    span({fontSize:'9px',fontWeight:'700',letterSpacing:'.1em',color:'rgba(255,255,255,.3)',marginRight:'4px',whiteSpace:'nowrap'},'PREVIEW STATE:'),
+    ...demos.map(({id, lbl}) =>
+      h('button', {
+        style:{padding:'4px 12px',borderRadius:'6px',border:'none',
+          background: S.demo===id ? '#2463EB' : 'rgba(255,255,255,.08)',
+          color: S.demo===id ? '#fff' : 'rgba(255,255,255,.45)',
+          fontSize:'11px',fontWeight:'600',cursor:'pointer',whiteSpace:'nowrap'},
+        onClick() {
+          S.demo = id; S.aiLoading = false;
+          if (id==='ready')       { S.form={shape:'Round',carat:'1.2',color:'D',clarity:'VVS1',cut:'Excellent'}; S.cert={certifier:'GIA',reportNumber:'1234567890',fluorescence:'None'}; }
+          if (id==='insufficient'){ S.form={shape:'Round',carat:'1.2',color:'',clarity:'',cut:''}; S.cert={certifier:'',reportNumber:'',fluorescence:''}; }
+          if (id===null)          { S.form={shape:'',carat:'',color:'',clarity:'',cut:''}; S.cert={certifier:'',reportNumber:'',fluorescence:''}; }
+          render();
+        }
+      }, lbl)
+    )
+  );
+}
+
+// ── Top Header ───────────────────────────────────────────────────
+function renderHeader() {
+  const steps = ['Stone details','Certification','Set your price'];
+  const logo = div({display:'flex',alignItems:'center',gap:'8px'},
+    div({width:'28px',height:'28px',background:'#0A1628',borderRadius:'7px',display:'flex',alignItems:'center',justifyContent:'center'},
+      iconSvg('<path d="M6 3h12l4 6-10 13L2 9z"/><path d="M11 3L8 9l4 13 4-13-3-6"/>', 'white', 14)
+    ),
+    h('span',{className:'sora',style:{fontSize:'12px',fontWeight:'700',letterSpacing:'.12em',color:'#0A1628'}},'GEMGEM'),
+    span({fontSize:'10px',color:'#94A3B8',letterSpacing:'.15em',marginLeft:'2px'},'EXCHANGE')
+  );
+
+  const stepNav = div({display:'flex',alignItems:'center',gap:'2px'},
+    ...steps.map((lbl,i) => {
+      const n=i+1, active=S.step===n, done=S.step>n;
+      return div({display:'flex',alignItems:'center'},
+        i>0 ? div({width:'28px',height:'1px',background:done?'#2463EB':'#E2E8F0',margin:'0 1px'}) : null,
+        div({
+          display:'flex',alignItems:'center',gap:'5px',padding:'4px 10px',borderRadius:'20px',
+          background: active?'#EBF2FF': done?'#F0FDF4':'transparent',
+          cursor: done?'pointer':'default',
+        },
+          div({
+            width:'17px',height:'17px',borderRadius:'50%',flexShrink:'0',
+            background: active?'#2463EB': done?'#15803D':'#E2E8F0',
+            display:'flex',alignItems:'center',justifyContent:'center',
+            fontSize:'9px',fontWeight:'700',color:'#fff',
+            ...(done||active?{}:{})
+          }, done?'✓':String(n)),
+          h('span',{
+            style:{fontSize:'11px',fontWeight:active?'600':'400',whiteSpace:'nowrap',
+              color: active?'#2463EB': done?'#15803D':'#94A3B8'}
+          }, lbl)
+        )
+      );
+    })
+  );
+
+  return div({background:'#fff',borderBottom:'1px solid #E2E8F0',padding:'0 28px',
+    display:'flex',alignItems:'center',justifyContent:'space-between',height:'54px',flexShrink:'0'},
+    logo, stepNav,
+    span({fontSize:'11px',color:'#94A3B8',cursor:'pointer'},'Save draft')
+  );
+}
+
+// ── AI Side Panel ─────────────────────────────────────────────────
+function renderAiPanel() {
+  const as  = getAiState();
+  const ef  = demoForm();
+  const ec  = demoCert();
+  const est = calcEst(ef, ec);
+  const mis = missingFields(ef);
+  const hasCert = ec && ec!=='None';
+
+  const confMap = {empty:0,low:20,partial:55,ready:hasCert?94:78,loading:0,error:0,insufficient:18};
+  const conf = confMap[as]||0;
+  const confLabel = conf>=80?(hasCert?'Excellent':'High'): conf>=50?'Moderate': conf>0?'Low':'—';
+  const confColor = conf>=80?'#4ade80': conf>=50?'#fbbf24':'#f87171';
+
+  // Header
+  let headerContent;
+  if (as==='loading') {
+    headerContent = div(null,
+      div({className:'shimmer-bg',style:{height:'24px',width:'68%',marginBottom:'8px',background:'rgba(255,255,255,.08)'}}),
+      div({className:'shimmer-bg',style:{height:'12px',width:'44%',background:'rgba(255,255,255,.05)'}})
+    );
+  } else if (as==='empty'||as==='insufficient') {
+    headerContent = div(null,
+      h('div',{className:'sora',style:{fontSize:'22px',color:'rgba(255,255,255,.2)',letterSpacing:'-.02em',marginBottom:'4px'}},'— / —'),
+      span({fontSize:'11px',color:'rgba(255,255,255,.3)'}, as==='insufficient'?'More fields needed':'Fill details to unlock')
+    );
+  } else if (as==='error') {
+    headerContent = div(null,
+      div({fontSize:'14px',color:'#FCA5A5',fontWeight:'600',marginBottom:'3px'},'Estimate unavailable'),
+      span({fontSize:'11px',color:'rgba(255,255,255,.4)'},'Retry or set price manually')
+    );
+  } else {
+    headerContent = div({className:'anim-fade'},
+      div({display:'flex',alignItems:'baseline',gap:'10px',marginBottom:'4px'},
+        h('span',{className:'sora',style:{fontSize: as==='partial'?'18px':'23px',fontWeight:'700',letterSpacing:'-.02em'}}, est?fmt(est.low):'—'),
+        span({fontSize:'15px',color:'rgba(255,255,255,.28)'},'—'),
+        h('span',{className:'sora',style:{fontSize: as==='partial'?'18px':'23px',fontWeight:'700',letterSpacing:'-.02em'}}, est?fmt(est.high):'—')
+      ),
+      span({fontSize:'11px',color:'rgba(255,255,255,.4)'}, 'Market appraisal'+(hasCert?` · ${ec} certified`:''))
+    );
+  }
+
+  const panelHeader = div({background:'linear-gradient(145deg,#0A1628 0%,#1a304f 100%)',padding:'16px 18px',color:'#fff'},
+    div({display:'flex',alignItems:'center',justifyContent:'space-between',marginBottom:'10px'},
+      div({display:'flex',alignItems:'center',gap:'7px'},
+        iconSvg('<path d="M12 2L2 7l10 5 10-5-10-5zM2 17l10 5 10-5M2 12l10 5 10-5"/>','rgba(255,255,255,.55)',13),
+        span({fontSize:'10px',letterSpacing:'.1em',fontWeight:'700',color:'rgba(255,255,255,.45)',textTransform:'uppercase'},'AI Pricing')
+      ),
+      as==='ready'
+        ? span({fontSize:'10px',background:'rgba(74,222,128,.18)',color:'#4ade80',padding:'2px 8px',borderRadius:'20px',fontWeight:'700',letterSpacing:'.06em'},'LIVE')
+        : null
+    ),
+    headerContent
+  );
+
+  // Confidence bar
+  const confBar = (as!=='empty'&&as!=='error') ? div({padding:'12px 18px',borderBottom:'1px solid #F1F3F7'},
+    div({display:'flex',justifyContent:'space-between',marginBottom:'7px'},
+      span({fontSize:'11px',color:'#64748B',fontWeight:'500'},'Estimate confidence'),
+      span({fontSize:'11px',fontWeight:'700',color: as==='loading'||as==='insufficient'?'#94A3B8':confColor},
+        as==='loading'?'...' : as==='insufficient'?'Incomplete' : confLabel
+      )
+    ),
+    div({height:'5px',background:'#F1F3F7',borderRadius:'3px',overflow:'hidden'},
+      div({height:'100%',borderRadius:'3px',
+        width:(as==='loading'?25:conf)+'%',
+        background:conf>=80?'#16A34A':conf>=50?'#D97706':'#DC2626',
+        transition:'width .6s ease'})
+    ),
+    mis.length>0&&as!=='loading'&&as!=='error'
+      ? div({marginTop:'9px'},
+          span({fontSize:'10px',color:'#94A3B8',letterSpacing:'.07em',display:'block',marginBottom:'5px',fontWeight:'700'},'NEEDS:'),
+          div({display:'flex',flexWrap:'wrap',gap:'4px'},
+            ...mis.map(f => span({fontSize:'10px',fontWeight:'600',background:'#FFF7ED',color:'#92400E',border:'1px solid #FDE68A',borderRadius:'4px',padding:'2px 7px'}, f[0].toUpperCase()+f.slice(1)))
+          )
+        )
+      : null
+  ) : null;
+
+  // Body
+  let body;
+  if (as==='empty') {
+    body = div({padding:'18px',textAlign:'center'},
+      div({width:'40px',height:'40px',background:'#F8FAFC',borderRadius:'50%',display:'flex',alignItems:'center',justifyContent:'center',margin:'0 auto 10px'},
+        iconSvg('<path d="M6 3h12l4 6-10 13L2 9z"/><path d="M11 3L8 9l4 13 4-13-3-6"/>','#CBD5E1',18)
+      ),
+      h('p',{style:{fontSize:'12px',color:'#94A3B8',lineHeight:'1.65'}},
+        'Fill in shape, carat, color, clarity, and cut to unlock your AI price estimate.'
+      )
+    );
+  } else if (as==='insufficient') {
+    body = div({padding:'14px 18px'},
+      h('p',{style:{fontSize:'12px',color:'#64748B',lineHeight:'1.6',marginBottom:'10px'}},
+        `Add ${mis.length} more field${mis.length>1?'s':''} to generate a useful estimate.`
+      ),
+      div({padding:'10px 12px',background:'#FFFBEB',border:'1px solid #FDE68A',borderRadius:'8px',fontSize:'11px',color:'#92400E',lineHeight:'1.6'},
+        h('strong',null,'Why it matters: '),
+        'Without cut grade and color, price differences can exceed 200%.'
+      )
+    );
+  } else if (as==='error') {
+    body = div({padding:'16px 18px',textAlign:'center'},
+      h('p',{style:{fontSize:'12px',color:'#64748B',lineHeight:'1.6',marginBottom:'12px'}},
+        'Pricing model is temporarily unavailable. You can still set a price manually.'
+      ),
+      h('button',{
+        style:{padding:'8px 18px',border:'1.5px solid #E2E8F0',borderRadius:'8px',background:'#fff',fontSize:'12px',fontWeight:'600',color:'#0A1628',display:'inline-flex',alignItems:'center',gap:'6px'},
+        onClick:()=>setState({demo:null,aiLoading:false})
+      },'↺  Retry')
+    );
+  } else if (as==='low'||as==='partial') {
+    const wPct=as==='low'?85:48, lPct=as==='low'?5:26;
+    body = div({padding:'14px 18px'},
+      div({position:'relative',height:'16px',background:'#F1F3F7',borderRadius:'3px',marginBottom:'8px',overflow:'hidden'},
+        div({position:'absolute',left:lPct+'%',right:(100-lPct-wPct)+'%',top:'0',height:'100%',borderRadius:'3px',
+          background:'linear-gradient(90deg,#BFDBFE,#2463EB)',transition:'all .5s'})
+      ),
+      div({display:'flex',justifyContent:'space-between',fontSize:'10px',color:'#94A3B8',fontWeight:'700',marginBottom:'10px'},
+        span(null,'QUICK SALE'), span(null,'FAIR MARKET'), span(null,'PREMIUM')
+      ),
+      h('p',{style:{fontSize:'11px',color:'#64748B',lineHeight:'1.6'}},
+        as==='low'
+          ? 'Range is very wide — add cut and color for a sharper estimate.'
+          : `Based on ${ef.carat}ct ${ef.color||'?'} ${ef.clarity||'?'}. Add ${mis.join(', ')} to tighten the range.`
+      )
+    );
+  } else if (as==='ready' && est) {
+    const comps = [
+      ['Similar stone, 30d ago',  est.mid - Math.round(est.mid*.04/100)*100],
+      ['Slightly lower clarity',  est.low + Math.round(est.low*.05/100)*100],
+      ['Similar stone, 14d ago',  est.mid + Math.round(est.mid*.03/100)*100],
+    ];
+    body = div({className:'anim-fade',padding:'12px 18px'},
+      div({padding:'10px 12px',background:'#F8FAFC',border:'1px solid #F1F3F7',borderRadius:'8px',fontSize:'11px',color:'#475569',lineHeight:'1.65',marginBottom:'12px'},
+        'Based on ', h('strong',{style:{color:'#0A1628'}},'847 recent transactions'),
+        ` for ${ef.carat}ct ${ef.color} ${ef.clarity} ${ef.cut} ${ef.shape} diamonds.`,
+        hasCert ? span({color:'#15803D'}, ` ${ec} cert adds ~7% premium.`) : null
+      ),
+      div({marginBottom:'12px'},
+        span({fontSize:'10px',color:'#94A3B8',fontWeight:'700',letterSpacing:'.07em',display:'block',marginBottom:'7px'},'RECENT COMPS'),
+        ...comps.map(([lbl,p],i) =>
+          div({display:'flex',justifyContent:'space-between',padding:'6px 0',borderBottom:i<2?'1px solid #F1F3F7':'none'},
+            span({fontSize:'11px',color:'#64748B'}, lbl),
+            h('span',{className:'sora',style:{fontSize:'11px',fontWeight:'700',color:'#0A1628'}}, fmt(p))
+          )
+        )
+      ),
+      h('button',{
+        style:{width:'100%',padding:'10px',background:'#2463EB',color:'#fff',border:'none',borderRadius:'9px',fontSize:'13px',fontWeight:'700',cursor:'pointer',display:'flex',alignItems:'center',justifyContent:'center',gap:'6px'},
+        onClick:()=>setState({step:3})
+      },'Set your asking price →')
+    );
+  } else {
+    body = div({padding:'12px 18px',minHeight:'60px'});
+  }
+
+  const disc = div({padding:'9px 18px',borderTop:'1px solid #F1F3F7',background:'#FAFBFC'},
+    h('p',{style:{fontSize:'10px',color:'#94A3B8',lineHeight:'1.5'}},
+      'AI estimates are informational only — not a guarantee of sale price. ',
+      h('a',{href:'#',style:{color:'#2463EB',textDecoration:'none'}},'How estimates work →')
+    )
+  );
+
+  return div({background:'#fff',borderRadius:'14px',overflow:'hidden',boxShadow:'0 2px 14px rgba(10,22,40,.09)',position:'sticky',top:'20px'},
+    panelHeader, confBar, body, disc
+  );
+}
+
+// ── Step 1: Stone Details ─────────────────────────────────────────
+function renderStep1() {
+  const f = S.form;
+
+  function fLabel(text, req, note) {
+    return h('label',{style:{display:'block',fontSize:'12px',fontWeight:'600',color:'#0A1628',marginBottom:'8px'}},
+      text,
+      req ? h('span',{style:{color:'#DC2626',marginLeft:'2px'}},'*') : null,
+      note ? span({fontSize:'10px',fontWeight:'400',color:'#94A3B8',marginLeft:'6px'}, note) : null
+    );
+  }
+
+  const shapeGrid = div({display:'grid',gridTemplateColumns:'repeat(4,1fr)',gap:'8px',marginBottom:'22px'},
+    ...SHAPES.map(s => {
+      const sel = f.shape===s;
+      return h('button',{
+        style:{padding:'11px 5px',border:sel?'2px solid #2463EB':'1.5px solid #E2E8F0',
+          borderRadius:'10px',background:sel?'#EBF2FF':'#fff',cursor:'pointer',
+          display:'flex',flexDirection:'column',alignItems:'center',gap:'6px'},
+        onClick:()=>setForm('shape',s)
+      },
+        shapeSvg(s, sel),
+        span({fontSize:'10px',fontWeight:'500',color:sel?'#2463EB':'#64748B'}, s)
+      );
+    })
+  );
+
+  const caratRow = div({marginBottom:'18px'},
+    fLabel('Carat weight', true),
+    div({position:'relative'},
+      h('input',{type:'number',placeholder:'e.g. 1.20',min:'.1',max:'20',step:'.01',
+        value: f.carat, style:{paddingRight:'36px'},
+        oninput:e=>setForm('carat',e.target.value)}),
+      span({position:'absolute',right:'11px',top:'50%',transform:'translateY(-50%)',fontSize:'11px',color:'#94A3B8',fontWeight:'600',pointerEvents:'none'},'ct')
+    )
+  );
+
+  const colorClarity = div({display:'grid',gridTemplateColumns:'1fr 1fr',gap:'14px',marginBottom:'18px'},
+    div(null, fLabel('Color',true),
+      h('select',{value:f.color, onchange:e=>setForm('color',e.target.value)},
+        h('option',{value:''},'Select grade'),
+        ...COLORS.map(c => h('option',{value:c}, c))
+      )
+    ),
+    div(null, fLabel('Clarity',true),
+      h('select',{value:f.clarity, onchange:e=>setForm('clarity',e.target.value)},
+        h('option',{value:''},'Select grade'),
+        ...CLARITIES.map(c => h('option',{value:c}, c))
+      )
+    )
+  );
+
+  const cutRow = div({marginBottom:'18px'},
+    fLabel('Cut grade',true,'Round brilliants'),
+    div({display:'flex',gap:'6px'},
+      ...CUTS.map(c => {
+        const sel = f.cut===c;
+        return h('button',{
+          style:{flex:'1',padding:'9px 3px',border:sel?'2px solid #2463EB':'1.5px solid #E2E8F0',
+            borderRadius:'7px',background:sel?'#EBF2FF':'#fff',
+            fontSize:'10px',fontWeight:sel?'700':'400',
+            color:sel?'#2463EB':c==='Excellent'?'#0A1628':'#64748B'},
+          onClick:()=>setForm('cut',c)
+        }, c);
+      })
+    )
+  );
+
+  const optional = h('details',null,
+    h('summary',{style:{fontSize:'12px',fontWeight:'600',color:'#64748B',padding:'8px 0',display:'flex',alignItems:'center',gap:'5px'}},
+      '+ Optional fields ',
+      span({fontSize:'10px',fontWeight:'400',color:'#94A3B8'},'(improves estimate)')
+    ),
+    div({display:'grid',gridTemplateColumns:'1fr 1fr',gap:'12px',marginTop:'10px'},
+      div(null,
+        h('label',{style:{display:'block',fontSize:'11px',fontWeight:'500',color:'#64748B',marginBottom:'6px'}},'Polish'),
+        h('select',{value:f.polish||'', onchange:e=>setForm('polish',e.target.value)},
+          h('option',{value:''},'Select'), ...CUTS.map(c=>h('option',{value:c},c))
+        )
+      ),
+      div(null,
+        h('label',{style:{display:'block',fontSize:'11px',fontWeight:'500',color:'#64748B',marginBottom:'6px'}},'Symmetry'),
+        h('select',{value:f.symmetry||'', onchange:e=>setForm('symmetry',e.target.value)},
+          h('option',{value:''},'Select'), ...CUTS.map(c=>h('option',{value:c},c))
+        )
+      )
+    )
+  );
+
+  return div(null,
+    h('h2',{className:'sora',style:{fontSize:'22px',fontWeight:'700',marginBottom:'4px'}},'Stone details'),
+    h('p',{style:{fontSize:'13px',color:'#64748B',marginBottom:'24px',lineHeight:'1.6'}},
+      'These fields power your AI price estimate. Complete all five for the most accurate range.'
+    ),
+    span({fontSize:'11px',fontWeight:'700',letterSpacing:'.09em',color:'#94A3B8',display:'block',marginBottom:'10px'},'SHAPE'),
+    shapeGrid, caratRow, colorClarity, cutRow, optional
+  );
+}
+
+// ── Step 2: Certification ─────────────────────────────────────────
+function renderStep2() {
+  const cert = S.cert;
+  const hasCert = cert.certifier && cert.certifier!=='None';
+  const trusted = ['GIA','IGI','HRD'].includes(cert.certifier);
+
+  const labGrid = div({display:'grid',gridTemplateColumns:'repeat(5,1fr)',gap:'9px',marginBottom:'16px'},
+    ...CERTS.map(id => {
+      const sel = cert.certifier===id;
+      const tr  = ['GIA','IGI','HRD'].includes(id);
+      return h('button',{
+        style:{padding:'13px 6px',border:sel?'2px solid #2463EB':'1.5px solid #E2E8F0',
+          borderRadius:'9px',background:'#fff',cursor:'pointer',textAlign:'center'},
+        onClick:()=>setCert('certifier',id)
+      },
+        h('div',{className:'sora',style:{fontSize:'14px',fontWeight:'700',
+          color:sel?'#2463EB':tr?'#0A1628':'#94A3B8',marginBottom:tr?'3px':'0'}}, id),
+        tr ? span({fontSize:'9px',fontWeight:'600',color:sel?'#2463EB':'#94A3B8'},'Recognized') : null
+      );
+    })
+  );
+
+  const certBonus = hasCert && trusted
+    ? div({marginBottom:'18px',padding:'10px 12px',background:'#F0FDF4',border:'1px solid #BBF7D0',borderRadius:'9px',display:'flex',gap:'9px',alignItems:'center'},
+        iconSvg('<path d="M20 6L9 17l-5-5"/>','#15803D',14),
+        span({fontSize:'12px',color:'#166534'}, `${cert.certifier} certification adds approximately +6–8% to your estimated value.`)
+      )
+    : null;
+
+  const reportNum = hasCert
+    ? div({marginBottom:'18px'},
+        h('label',{style:{display:'block',fontSize:'12px',fontWeight:'600',color:'#0A1628',marginBottom:'7px'}},
+          'Report number ',
+          span({fontSize:'10px',fontWeight:'400',color:'#94A3B8'},'optional — enables buyer verification')
+        ),
+        h('input',{type:'text',placeholder:'e.g. 1234567890',value:cert.reportNumber||'',
+          oninput:e=>setCert('reportNumber',e.target.value)})
+      )
+    : null;
+
+  const fluorRow = div({marginBottom: hasCert?'20px':'4px'},
+    h('label',{style:{display:'block',fontSize:'12px',fontWeight:'600',color:'#0A1628',marginBottom:'9px'}},'Fluorescence'),
+    div({display:'flex',gap:'7px',flexWrap:'wrap'},
+      ...FLUOR.map(f => {
+        const sel = cert.fluorescence===f;
+        return h('button',{
+          style:{padding:'6px 14px',border:sel?'2px solid #2463EB':'1.5px solid #E2E8F0',
+            borderRadius:'20px',background:sel?'#EBF2FF':'#fff',
+            fontSize:'11px',fontWeight:sel?'600':'400',color:sel?'#2463EB':'#475569'},
+          onClick:()=>setCert('fluorescence',f)
+        }, f);
+      })
+    )
+  );
+
+  const upload = hasCert
+    ? div({padding:'16px',border:'1.5px dashed #E2E8F0',borderRadius:'10px',textAlign:'center',cursor:'pointer',background:'#FAFBFC'},
+        iconSvg('<path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4M17 8l-5-5-5 5M12 3v12"/>','#94A3B8',22),
+        div({fontSize:'12px',color:'#64748B',fontWeight:'500',marginTop:'8px'},'Upload certificate image'),
+        div({fontSize:'10px',color:'#94A3B8',marginTop:'3px'},'PNG, JPG, or PDF · Up to 10 MB')
+      )
+    : null;
+
+  return div(null,
+    h('h2',{className:'sora',style:{fontSize:'22px',fontWeight:'700',marginBottom:'4px'}},'Certification'),
+    h('p',{style:{fontSize:'13px',color:'#64748B',marginBottom:'24px',lineHeight:'1.6'}},
+      'A lab certificate significantly increases buyer trust and narrows your AI price range.'
+    ),
+    span({fontSize:'11px',fontWeight:'700',letterSpacing:'.09em',color:'#94A3B8',display:'block',marginBottom:'10px'},'CERTIFYING LAB'),
+    labGrid, certBonus, reportNum, fluorRow, upload
+  );
+}
+
+// ── Step 3: Pricing ───────────────────────────────────────────────
+function renderStep3() {
+  const ef   = demoForm();
+  const ecer = S.demo ? {certifier:'GIA',reportNumber:'1234567890',fluorescence:'None'} : S.cert;
+  const est  = calcEst(ef, ecer.certifier) || {low:28000,mid:37000,high:45000};
+  const hasCert = ecer.certifier && ecer.certifier!=='None';
+
+  const strategies = [
+    {id:'fast',    icon:'⚡',lbl:'Fast sale',   tag:'PRIORITY PLACEMENT',
+      price: Math.round(est.low*1.02/100)*100,
+      desc:'Positioned to move quickly. Ideal if you want a payout within days.'},
+    {id:'balanced',icon:'⚖', lbl:'Balanced',   tag:'RECOMMENDED',
+      price: est.mid, desc:'The sweet spot. Maximizes your return without slowing the sale.', rec:true},
+    {id:'max',     icon:'↗', lbl:'Max return',  tag:'PREMIUM LISTING',
+      price: Math.round(est.high*.97/100)*100,
+      desc:'For patient sellers. We target collectors seeking this exact quality.'},
+  ];
+
+  const minP = est.low, maxP = est.high;
+  const sliderPrice = Math.round((minP+(maxP-minP)*(S.slider/100))/100)*100;
+  const takehome    = Math.round(sliderPrice*.92);
+  const cc    = critFilled(ef);
+  const score = Math.min(98, 55 + cc*6 + (hasCert?12:0) + (ecer.reportNumber?.length>3?5:0));
+  const scoreLabel  = score>=90?'Excellent': score>=75?'Strong': score>=60?'Good':'Fair';
+  const scoreColor  = score>=90?'#4ade80': score>=75?'#60a5fa':'#fbbf24';
+
+  // Market appraisal card
+  const marketCard = div({background:'#fff',border:'1px solid #E2E8F0',borderRadius:'14px',padding:'20px 24px',marginBottom:'18px',boxShadow:'0 1px 8px rgba(10,22,40,.05)'},
+    div({display:'flex',alignItems:'center',justifyContent:'space-between',marginBottom:'12px'},
+      span({fontSize:'10px',fontWeight:'700',letterSpacing:'.09em',color:'#2463EB',background:'#EBF2FF',border:'1px solid #BFDBFE',borderRadius:'5px',padding:'3px 10px'},'MARKET APPRAISAL'),
+      hasCert
+        ? div({display:'flex',alignItems:'center',gap:'5px'},
+            iconSvg('<path d="M9 12l2 2 4-4M7.835 4.697a3.42 3.42 0 001.946-.806 3.42 3.42 0 014.438 0 3.42 3.42 0 001.946.806 3.42 3.42 0 013.138 3.138 3.42 3.42 0 00.806 1.946 3.42 3.42 0 010 4.438 3.42 3.42 0 00-.806 1.946 3.42 3.42 0 01-3.138 3.138 3.42 3.42 0 00-1.946.806 3.42 3.42 0 01-4.438 0 3.42 3.42 0 00-1.946-.806 3.42 3.42 0 01-3.138-3.138 3.42 3.42 0 00-.806-1.946 3.42 3.42 0 010-4.438 3.42 3.42 0 00.806-1.946 3.42 3.42 0 013.138-3.138z"/>','#15803D',13),
+            span({fontSize:'11px',fontWeight:'700',color:'#15803D'}, `${ecer.certifier} Authenticated`)
+          )
+        : null
+    ),
+    div({display:'flex',alignItems:'baseline',gap:'12px',marginBottom:'10px'},
+      h('span',{className:'sora',style:{fontSize:'30px',fontWeight:'700',letterSpacing:'-.03em'}}, fmt(est.low)),
+      span({fontSize:'20px',color:'#CBD5E1',fontWeight:'300'},'—'),
+      h('span',{className:'sora',style:{fontSize:'30px',fontWeight:'700',letterSpacing:'-.03em'}}, fmt(est.high))
+    ),
+    h('p',{style:{fontSize:'12px',color:'#64748B',lineHeight:'1.65'}},
+      'Based on your ', h('strong',{style:{color:'#0A1628'}}, `${ef.carat}ct ${ef.color}-${ef.clarity} ${ef.cut} ${ef.shape}`),
+      ' diamond. Derived from real-time wholesale data and 1,200+ recent transactions.'
+    )
+  );
+
+  // Strategy cards
+  const stratCards = div({marginBottom:'16px'},
+    span({fontSize:'10px',fontWeight:'700',letterSpacing:'.09em',color:'#94A3B8',display:'block',marginBottom:'12px'},'SELECT YOUR STRATEGY'),
+    div({display:'grid',gridTemplateColumns:'1fr 1fr 1fr',gap:'10px'},
+      ...strategies.map(s => {
+        const isSel = S.strategy===s.id;
+        return h('button',{
+          style:{padding:'15px 12px',border:isSel?'2px solid #2463EB':'1.5px solid #E2E8F0',
+            borderRadius:'12px',background:'#fff',cursor:'pointer',textAlign:'left',
+            boxShadow:isSel?'0 0 0 3px rgba(36,99,235,.09)':'none',position:'relative'},
+          onClick:()=>setState({strategy:s.id})
+        },
+          isSel ? div({position:'absolute',top:'10px',right:'10px'},
+            iconSvg('<circle cx="12" cy="12" r="10"/><path d="M9 12l2 2 4-4"/>','#2463EB',16)
+          ) : null,
+          div({fontSize:'17px',marginBottom:'8px'}, s.icon),
+          h('div',{className:'sora',style:{fontSize:'13px',fontWeight:'700',color:'#0A1628',marginBottom:'3px'}}, s.lbl),
+          div({fontSize:'9px',fontWeight:'700',letterSpacing:'.07em',color:isSel?'#2463EB':'#94A3B8',marginBottom:'8px'}, s.tag),
+          h('div',{className:'sora',style:{fontSize:'18px',fontWeight:'700',color:'#0A1628',marginBottom:'6px'}}, fmt(s.price)),
+          div({fontSize:'11px',color:'#64748B',lineHeight:'1.5'}, s.desc)
+        );
+      })
+    )
+  );
+
+  // Slider
+  const sliderSec = div({background:'#fff',border:'1px solid #E2E8F0',borderRadius:'13px',padding:'17px 22px',marginBottom:'14px'},
+    div({display:'flex',justifyContent:'space-between',alignItems:'center',marginBottom:'12px'},
+      span({fontSize:'12px',fontWeight:'600'},'Fine-tune your payout'),
+      h('span',{className:'sora',style:{fontSize:'17px',fontWeight:'700'}}, fmt(sliderPrice))
+    ),
+    h('input',{id:'priceRange',type:'range',min:'0',max:'100',step:'1',value:String(S.slider),
+      style:{width:'100%'},
+      oninput:e=>setState({slider:parseInt(e.target.value)})}),
+    div({display:'flex',justifyContent:'space-between',fontSize:'10px',color:'#94A3B8',fontWeight:'700',marginTop:'8px'},
+      div({textAlign:'left'},  div(null,'QUICK SALE'),  div({color:'#0A1628',fontSize:'11px',marginTop:'1px'}, fmt(est.low))),
+      div({textAlign:'center'},div(null,'FAIR MARKET'), div({color:'#0A1628',fontSize:'11px',marginTop:'1px'}, fmt(est.mid))),
+      div({textAlign:'right'}, div(null,'PREMIUM'),     div({color:'#0A1628',fontSize:'11px',marginTop:'1px'}, fmt(est.high)))
+    )
+  );
+
+  // Disclaimer
+  const disclaimer = div({padding:'12px 14px',background:'#F8FAFC',border:'1px solid #E2E8F0',borderRadius:'10px',display:'flex',gap:'9px',alignItems:'flex-start'},
+    iconSvg('<circle cx="12" cy="12" r="10"/><path d="M12 16v-4M12 8h.01"/>','#94A3B8',14),
+    h('p',{style:{fontSize:'11px',color:'#64748B',lineHeight:'1.65'}},
+      'AI price estimates are informational guidance based on historical transaction data and current market signals. Not a guarantee of sale price. You retain full control over your asking price. ',
+      h('a',{href:'#',style:{color:'#2463EB',textDecoration:'none',fontWeight:'500'}},'How estimates work →')
+    )
+  );
+
+  // Dark sidebar
+  const sidebar = div({background:'#0A1628',borderRadius:'14px',overflow:'hidden',color:'#fff',position:'sticky',top:'20px',width:'305px',flexShrink:'0'},
+    // Listing power
+    div({padding:'18px 20px 15px',borderBottom:'1px solid rgba(255,255,255,.07)'},
+      span({fontSize:'9px',fontWeight:'700',letterSpacing:'.13em',color:'rgba(255,255,255,.3)',display:'block',marginBottom:'9px'},'LISTING POWER'),
+      div({display:'flex',alignItems:'center',gap:'14px',marginBottom:'11px'},
+        h('span',{className:'sora',style:{fontSize:'42px',fontWeight:'700'}}, String(score)),
+        div(null,
+          div({fontSize:'9px',color:'rgba(255,255,255,.3)',marginBottom:'2px'},'STRENGTH SCORE'),
+          h('div',{className:'sora',style:{fontSize:'16px',fontWeight:'700',color:scoreColor}}, scoreLabel)
+        )
+      ),
+      div({height:'5px',background:'rgba(255,255,255,.1)',borderRadius:'3px',overflow:'hidden'},
+        div({height:'100%',borderRadius:'3px',width:score+'%',background:scoreColor,transition:'width .5s ease'})
+      )
+    ),
+    // Take-home
+    div({padding:'15px 20px',borderBottom:'1px solid rgba(255,255,255,.07)'},
+      span({fontSize:'10px',letterSpacing:'.07em',color:'rgba(255,255,255,.3)',display:'block',marginBottom:'4px'},'YOUR TAKE-HOME'),
+      h('div',{className:'sora',style:{fontSize:'28px',fontWeight:'700',marginBottom:'6px'}}, fmt(takehome)),
+      div({display:'flex',justifyContent:'space-between',fontSize:'11px',color:'rgba(255,255,255,.35)'},
+        span(null,'GemGem service fee (8.0%)'),
+        span(null, '-'+fmt(sliderPrice-takehome))
+      )
+    ),
+    // Perks
+    div({padding:'15px 20px',borderBottom:'1px solid rgba(255,255,255,.07)'},
+      ...[
+        {icon:'shield', t:'GemGem Global Insurance',  d:"Fully covered by Lloyd's of London from pickup to final delivery.", c:'#4ade80'},
+        {icon:'star',   t:'Priority listing',          d:`Your ${ef.color||'D'}-color asset will feature in our "Exceptional Quality" newsletter.`, c:'#60a5fa'},
+      ].map(({icon,t,d,c},i) =>
+        div({display:'flex',gap:'10px',marginBottom:i===0?'13px':'0'},
+          div({width:'30px',height:'30px',borderRadius:'7px',background:'rgba(255,255,255,.07)',display:'flex',alignItems:'center',justifyContent:'center',flexShrink:'0'},
+            icon==='shield'
+              ? iconSvg('<path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/>',c,13)
+              : iconSvg('<path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.86L12 17.77l-6.18 3.23L7 14.14 2 9.27l6.91-1.01L12 2z"/>',c,13)
+          ),
+          div(null,
+            div({fontSize:'11px',fontWeight:'700',marginBottom:'2px'}, t),
+            div({fontSize:'10px',color:'rgba(255,255,255,.4)',lineHeight:'1.5'}, d)
+          )
+        )
+      )
+    ),
+    // CTA
+    div({padding:'15px 20px 18px'},
+      h('button',{
+        style:{width:'100%',padding:'13px',background:'#2463EB',color:'#fff',border:'none',
+          borderRadius:'10px',fontSize:'14px',fontWeight:'700',cursor:'pointer',
+          display:'flex',alignItems:'center',justifyContent:'center',gap:'7px',
+          fontFamily:"'Sora',sans-serif",marginBottom:'9px'}
+      },'Finalize listing  →'),
+      div({textAlign:'center',fontSize:'9px',color:'rgba(255,255,255,.2)',letterSpacing:'.1em'},'SECURE CHECKOUT POWERED BY STRIPE')
+    )
+  );
+
+  return div({display:'flex',gap:'24px',alignItems:'flex-start'},
+    div({flex:'1',minWidth:'0'},
+      h('h2',{className:'sora',style:{fontSize:'22px',fontWeight:'700',marginBottom:'4px'}},'Set your price'),
+      h('p',{style:{fontSize:'13px',color:'#64748B',marginBottom:'22px',lineHeight:'1.6'}},
+        'AI guidance based on real market data. You control the final asking price.'
+      ),
+      marketCard, stratCards, sliderSec, disclaimer
+    ),
+    sidebar
+  );
+}
+
+// ── Nav row ───────────────────────────────────────────────────────
+function renderNav() {
+  return div({display:'flex',justifyContent:'space-between',marginTop:'28px',paddingTop:'20px',borderTop:'1px solid #F1F3F7'},
+    S.step>1
+      ? h('button',{
+          style:{padding:'9px 20px',border:'1.5px solid #E2E8F0',borderRadius:'9px',background:'#fff',
+            fontSize:'13px',fontWeight:'600',color:'#475569',display:'flex',alignItems:'center',gap:'5px'},
+          onClick:()=>setState({step:S.step-1})
+        },'← Back')
+      : div(null),
+    h('button',{
+      style:{padding:'9px 22px',border:'none',borderRadius:'9px',background:'#2463EB',
+        fontSize:'13px',fontWeight:'700',color:'#fff',display:'flex',alignItems:'center',gap:'5px'},
+      onClick:()=>setState({step:Math.min(3,S.step+1)})
+    },
+      S.step===1 ? 'Continue to certification →' :
+      S.step===2 ? 'Continue to pricing →' : 'Review & submit →'
+    )
+  );
+}
+
+// ── Main render ───────────────────────────────────────────────────
+function render() {
+  const root = document.getElementById('root');
+  root.innerHTML = '';
+
+  let mainContent;
+  if (S.step < 3) {
+    mainContent = div({maxWidth:'900px',margin:'0 auto',display:'grid',gridTemplateColumns:'1fr 290px',gap:'22px',alignItems:'start'},
+      div({background:'#fff',borderRadius:'14px',padding:'28px 28px 22px',boxShadow:'0 1px 8px rgba(10,22,40,.06)'},
+        S.step===1 ? renderStep1() : renderStep2(),
+        renderNav()
+      ),
+      renderAiPanel()
+    );
+  } else {
+    mainContent = div({maxWidth:'1060px',margin:'0 auto'},
+      div({marginBottom:'18px'},
+        h('button',{
+          style:{padding:'6px 14px',border:'1.5px solid #E2E8F0',borderRadius:'7px',background:'#fff',
+            fontSize:'11px',fontWeight:'600',color:'#475569',display:'inline-flex',alignItems:'center',gap:'5px'},
+          onClick:()=>setState({step:2})
+        },'← Back to certification')
+      ),
+      renderStep3()
+    );
+  }
+
+  root.appendChild(
+    div({display:'flex',flexDirection:'column',minHeight:'100vh'},
+      renderDemoBar(),
+      renderHeader(),
+      div({flex:'1',padding:'28px 24px',overflowY:'auto'}, mainContent)
+    )
+  );
+}
+
+render();
+</script>
+</body>
+</html>
